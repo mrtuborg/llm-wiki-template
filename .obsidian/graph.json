@@ -8,6 +8,13 @@
   "collapse-color-groups": true,
   "colorGroups": [
     {
+      "query": "tag:#axiom",
+      "color": {
+        "a": 1,
+        "rgb": 15105570
+      }
+    },
+    {
       "query": "path:pipeline  ",
       "color": {
         "a": 1,
