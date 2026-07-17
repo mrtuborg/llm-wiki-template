@@ -23,6 +23,46 @@
   background: var(--background-secondary);
 }
 
+/* Search bar */
+.llm-graph-searchbar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  flex-shrink: 0;
+}
+.llm-graph-search {
+  flex: 1;
+  background: var(--background-modifier-form-field);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px 0 0 4px;
+  color: var(--text-normal);
+  font-size: 12px;
+  padding: 5px 10px;
+  outline: none;
+  min-height: 28px;
+}
+.llm-graph-search:focus {
+  border-color: var(--interactive-accent);
+}
+.llm-graph-search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background-modifier-form-field);
+  border: 1px solid var(--background-modifier-border);
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  min-height: 28px;
+  padding: 0 8px;
+}
+.llm-graph-search-clear:hover { color: var(--text-normal); }
+
 .llm-graph-btn {
   display: inline-flex;
   align-items: center;
