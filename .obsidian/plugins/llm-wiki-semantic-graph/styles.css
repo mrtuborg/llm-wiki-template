@@ -24,8 +24,10 @@
 }
 
 .llm-graph-btn {
-  min-width: 44px;
-  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
   padding: 0 10px;
   border: 1px solid var(--background-modifier-border);
   border-radius: 5px;
@@ -33,10 +35,17 @@
   color: var(--text-muted);
   cursor: pointer;
   font-size: 12px;
+  font-family: var(--font-interface);
   white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.llm-graph-btn .svg-icon {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  stroke-width: 2px;
 }
 .llm-graph-btn:hover { border-color: var(--interactive-accent); color: var(--text-normal); }
 .llm-graph-btn--active {
