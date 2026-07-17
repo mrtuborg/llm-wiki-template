@@ -68,6 +68,8 @@ Generate:
 
 1. /wiki/synthesis/<topic>.md  
    - synthesis pages (highest layer)
+   - frontmatter MUST have `type: Synthesis` (NOT Overview)
+   - use template: /wiki/templates/synthesis.md
 
 2. /wiki/synthesis/index.md  
    - index of synthesis pages
