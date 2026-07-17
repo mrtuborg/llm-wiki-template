@@ -168,8 +168,18 @@
   gap: 5px;
   margin-bottom: 4px;
 }
+.llm-sb-layer-clickable {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 1px 3px;
+  margin: 0 -3px 4px;
+  transition: background 0.12s;
+}
+.llm-sb-layer-clickable:hover { background: var(--background-modifier-hover); }
+.llm-sb-layer-row--off { opacity: 0.45; }
+.llm-sb-layer-ctrl { display: flex; gap: 4px; margin-bottom: 6px; }
 .llm-sb-layer-num  { font-size: 9px; color: var(--text-faint); width: 12px; text-align: right; flex-shrink: 0; }
-.llm-sb-layer-name { font-size: 10px; width: 62px; flex-shrink: 0; }
+.llm-sb-layer-name { font-size: 10px; width: 52px; flex-shrink: 0; }
 .llm-sb-track      { flex: 1; height: 8px; background: var(--background-modifier-border); border-radius: 4px; overflow: hidden; position: relative; }
 .llm-sb-fill       { height: 100%; border-radius: 4px; min-width: 3px; }
 .llm-sb-fill--blue { background: #3B82F6; }
