@@ -89,6 +89,10 @@ Generate:
 - Never produce conversational text.
 - Always produce structured, formal output.
 - Treat synthesis as the highest epistemic layer.
+- **Overview vs Synthesis distinction:**
+  - `type: Overview` — per-domain summary; created by Ingestion Layer (Layer 6), lives in `/wiki/<domain>/`
+  - `type: Synthesis` — cross-domain integration; created ONLY by this layer, lives in `/wiki/synthesis/`
+  - Never create Overview pages here. Never use `type: Overview` in output.
 
 ### STYLE
 - Formal, structured, explicit.

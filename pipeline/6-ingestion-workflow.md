@@ -38,6 +38,9 @@ Generate:
 
 1. /wiki/<domain>/<page>.md  
    - typed pages (Axiom, Concept, Entity, Process, Pattern, Method, Rule, Overview)
+   - **Overview** pages are per-domain summaries (`domain: <domain>`, lives in `/wiki/<domain>/`).
+     Create one Overview per domain when sufficient Axioms + Entities + Processes exist.
+     Overview MUST link outbound to at least one Synthesis page via `**integrated_into** → [[synthesis-slug]]`.
    - Ingestion MUST NOT create Decision pages (owned by Decision Log Layer)
    - Ingestion MUST NOT create Synthesis pages (owned by Synthesis Layer)
 
