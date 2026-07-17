@@ -160,6 +160,7 @@
 .llm-sb-card--warn .llm-sb-card-val { color: #EF4444; }
 .llm-sb-card-val { font-size: 14px; font-weight: 700; color: var(--text-accent); font-family: var(--font-monospace); }
 .llm-sb-card-lbl { font-size: 9px; color: var(--text-faint); margin-top: 2px; }
+.llm-sb-orphan-row { margin-top: 6px; display: flex; justify-content: center; }
 
 /* Layer rows */
 .llm-sb-layer-row {
