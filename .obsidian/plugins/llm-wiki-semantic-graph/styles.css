@@ -230,7 +230,7 @@
 .llm-sb-hub-deg  { font-size: 10px; font-family: var(--font-monospace); font-weight: 600; color: var(--text-accent); width: 20px; text-align: right; flex-shrink: 0; }
 
 /* ── Graph elements ── */
-.llm-graph-edge       { stroke: var(--text-faint); stroke-opacity: 0.55; }
+.llm-graph-edge       { stroke: var(--text-faint); stroke-opacity: 0.6; }
 .llm-graph-edge-label { font-size: 9px; font-family: var(--font-monospace, monospace); fill: var(--text-faint); text-anchor: middle; }
 
 .llm-graph-node        { cursor: pointer; }
