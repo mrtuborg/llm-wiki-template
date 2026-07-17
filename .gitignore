@@ -12,7 +12,12 @@ pipeline/config.md
 # Obsidian workspace state
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
-.obsidian/plugins/
+
+# Third-party plugins (not tracked — installed by user)
+# Use wildcard so we can negate our own plugin below
+.obsidian/plugins/*/
+# Track our plugin (negate works when parent is not itself ignored)
+!.obsidian/plugins/llm-wiki-semantic-graph/
 
 # OS
 .DS_Store

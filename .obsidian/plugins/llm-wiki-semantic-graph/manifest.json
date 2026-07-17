@@ -1,0 +1,10 @@
+{
+  "id": "llm-wiki-semantic-graph",
+  "name": "LLM Wiki Semantic Graph",
+  "version": "1.0.0",
+  "minAppVersion": "1.4.0",
+  "description": "D3.js force-directed semantic graph for LLM-Wiki vaults. Click nodes to open files.",
+  "author": "mrtuborg",
+  "authorUrl": "https://github.com/mrtuborg",
+  "isDesktopOnly": false
+}
