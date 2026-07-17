@@ -17,3 +17,5 @@ pipeline/config.md
 # OS
 .DS_Store
 Thumbs.db
+
+# Keep graph.json and app.json (they are template config)
