@@ -73,8 +73,29 @@ if empty:
             cur = f
         print(f"    -> [[{slug}]] (empty: {path})")
 
+
+# --- Frontmatter duplication check ---
+duplication_re = re.compile(r'^\*\*(Type|OTF|Domain|Status):\*\*', re.MULTILINE)
+dupe = []
+for f in sorted(glob.glob(WIKI + "/**/*.md", recursive=True)):
+    if any(f.startswith(ex) for ex in EXCLUDE_DIRS):
+        continue
+    rel = f.replace(os.path.expanduser("~/vaults/Vladimir-llm-wiki/"), "")
+    content = open(f).read()
+    # Skip frontmatter block, check body only
+    body = re.sub(r'^---\n.*?\n---\n', '', content, count=1, flags=re.DOTALL)
+    if duplication_re.search(body):
+        matches = duplication_re.findall(body)
+        dupe.append((rel, set(matches)))
+
+if dupe:
+    errors += len(dupe)
+    print(f"\nFRONTMATTER DUPLICATION IN BODY: {len(dupe)}")
+    for f, fields in dupe:
+        print(f"  {f}: {', '.join(sorted(fields))}")
+
 if errors == 0:
-    print(f"OK — no dead or empty links ({len(slug_to_path)} pages scanned)")
+    print(f"OK — no dead links, no empty links, no frontmatter duplication ({len(slug_to_path)} pages scanned)")
 else:
     print(f"\nTOTAL ERRORS: {errors}")
     exit(1)
