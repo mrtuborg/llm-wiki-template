@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "path:wiki -path:wiki/templates",
+  "search": "path:wiki -path:wiki/templates -path:wiki/compiled -path:wiki/graph -path:wiki/updates",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
