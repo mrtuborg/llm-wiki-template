@@ -1,0 +1,10 @@
+{
+  "userIgnoreFilters": [
+    "pipeline",
+    "schema",
+    "ontology",
+    "domains",
+    "tools",
+    "docs"
+  ]
+}
