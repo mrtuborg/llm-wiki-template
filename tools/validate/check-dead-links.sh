@@ -12,10 +12,10 @@ WIKI = "$WIKI"
 EXCLUDE_DIRS = {os.path.join(WIKI, "templates")}
 
 placeholder_re = re.compile(
-    r'^(page-slug|entity-name|process-name|pattern-name|method-name|'
+    r'^(page-slug|entity-slug|entity-name|process-name|pattern-name|method-name|'
     r'concept-name|overview-name|synthesis-name|rule-name|axiom-name|'
     r'other-.*|next-.*|parent-.*|raw-document-.*|reconstructed-.*|'
-    r'typed-page-.*|wikilink|overview-name-\d+)$'
+    r'typed-page-.*|wikilink|overview-name-\d+|\.\.\.)$'
 )
 
 def body_length(path):
