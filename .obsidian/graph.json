@@ -1,19 +1,12 @@
 {
   "collapse-filter": false,
-  "search": "",
+  "search": "path:wiki -path:wiki/templates",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
   "showOrphans": true,
-  "collapse-color-groups": false,
+  "collapse-color-groups": true,
   "colorGroups": [
-    {
-      "query": "path:wiki/",
-      "color": {
-        "a": 1,
-        "rgb": 14048348
-      }
-    },
     {
       "query": "path:pipeline  ",
       "color": {
@@ -55,6 +48,13 @@
         "a": 1,
         "rgb": 6053078
       }
+    },
+    {
+      "query": "path:wiki/templates  ",
+      "color": {
+        "a": 1,
+        "rgb": 6053078
+      }
     }
   ],
   "collapse-display": true,
@@ -67,6 +67,6 @@
   "repelStrength": 10,
   "linkStrength": 1,
   "linkDistance": 250,
-  "scale": 0.9390646094482152,
-  "close": false
+  "scale": 0.7293042624291669,
+  "close": true
 }

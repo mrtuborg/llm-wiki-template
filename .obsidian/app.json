@@ -5,6 +5,7 @@
     "ontology",
     "domains",
     "tools",
-    "docs"
+    "docs",
+    "wiki/templates"
   ]
 }
