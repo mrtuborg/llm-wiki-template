@@ -170,8 +170,9 @@
 .llm-graph-edge-label { font-size: 9px; font-family: var(--font-monospace, monospace); fill: var(--text-faint); text-anchor: middle; }
 
 .llm-graph-node        { cursor: pointer; }
-.llm-graph-node-circle { stroke: var(--background-primary); stroke-width: 2px; }
-.llm-graph-node:hover .llm-graph-node-circle { stroke: #fff; stroke-width: 3px; }
+.llm-graph-node-shape  { stroke: var(--background-primary); stroke-width: 1.5px; }
+.llm-graph-node:hover .llm-graph-node-shape,
+.llm-graph-node:focus  .llm-graph-node-shape { stroke: #fff; stroke-width: 2.5px; filter: brightness(1.15); }
 .llm-graph-node-label  { font-size: 10px; font-family: var(--font-interface, sans-serif); fill: var(--text-normal); }
 
 /* ── Tooltip ── */
