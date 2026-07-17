@@ -1,11 +1,12 @@
 /* LLM Wiki Semantic Graph Plugin */
 
+/* ── Root container ── */
 .llm-graph-container {
   position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
   background: var(--background-primary);
 }
 
@@ -13,97 +14,158 @@
 .llm-graph-toolbar {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   padding: 4px 8px;
   border-bottom: 1px solid var(--background-modifier-border);
   flex-shrink: 0;
   flex-wrap: wrap;
-  min-height: 36px;
+  min-height: 40px;
   background: var(--background-secondary);
 }
 
 .llm-graph-btn {
-  /* 44px minimum touch target for iOS HIG */
   min-width: 44px;
-  min-height: 44px;
-  padding: 0 12px;
+  min-height: 36px;
+  padding: 0 10px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: 5px;
   background: var(--background-primary);
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 12px;
+  white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
 }
-
-.llm-graph-btn:active,
+.llm-graph-btn:hover { border-color: var(--interactive-accent); color: var(--text-normal); }
 .llm-graph-btn--active {
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
+  background: rgba(59,130,246,0.15);
+  color: var(--text-accent);
   border-color: var(--interactive-accent);
 }
 
 .llm-graph-stats {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-muted);
   font-family: var(--font-monospace);
   margin-left: auto;
   white-space: nowrap;
 }
 
-/* ── SVG canvas ── */
+/* ── Main layout: SVG + sidebar ── */
+.llm-graph-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
 .llm-graph-svg {
   flex: 1;
-  width: 100%;
   display: block;
-  /* Prevents iOS scroll hijack when user drags a node */
-  touch-action: none;
+  touch-action: none; /* iOS: prevents page scroll during node drag */
 }
 
-/* ── Edges ── */
-.llm-graph-edge {
-  stroke: var(--text-faint);
-  stroke-width: 1.2px;
-  stroke-opacity: 0.55;
-  marker-end: url(#llm-arrow);
+/* ── Sidebar ── */
+.llm-graph-sidebar {
+  display: none;
+  flex-direction: column;
+  width: 240px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.llm-graph-sidebar--open { display: flex; }
+
+.llm-sb-section {
+  padding: 10px 10px 4px;
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 
-/* ── Edge labels ── */
-.llm-graph-edge-label {
+.llm-sb-title {
   font-size: 9px;
-  font-family: var(--font-monospace, monospace);
-  fill: var(--text-faint);
-  text-anchor: middle;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 8px;
 }
 
-/* ── Nodes ── */
-.llm-graph-node {
+/* Health cards */
+.llm-sb-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin-bottom: 6px;
+}
+.llm-sb-card {
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 5px;
+  padding: 5px 4px;
+  text-align: center;
+}
+.llm-sb-card--warn { border-color: #EF4444; }
+.llm-sb-card--warn .llm-sb-card-val { color: #EF4444; }
+.llm-sb-card-val { font-size: 14px; font-weight: 700; color: var(--text-accent); font-family: var(--font-monospace); }
+.llm-sb-card-lbl { font-size: 9px; color: var(--text-faint); margin-top: 2px; }
+
+/* Layer rows */
+.llm-sb-layer-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+.llm-sb-layer-num  { font-size: 9px; color: var(--text-faint); width: 12px; text-align: right; flex-shrink: 0; }
+.llm-sb-layer-name { font-size: 10px; width: 62px; flex-shrink: 0; }
+.llm-sb-track      { flex: 1; height: 8px; background: var(--background-modifier-border); border-radius: 4px; overflow: hidden; position: relative; }
+.llm-sb-fill       { height: 100%; border-radius: 4px; min-width: 3px; }
+.llm-sb-fill--blue { background: #3B82F6; }
+.llm-sb-fill--teal { background: #14B8A6; }
+.llm-sb-gap        { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 8px; color: var(--text-faint); letter-spacing: 0.05em; }
+.llm-sb-layer-cnt  { font-size: 10px; font-family: var(--font-monospace); width: 20px; text-align: right; flex-shrink: 0; }
+
+/* Bar rows (edge types, domain) */
+.llm-sb-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+.llm-sb-bar-name { font-size: 9px; font-family: var(--font-monospace); color: var(--text-muted); width: 80px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.llm-sb-bar-cnt  { font-size: 10px; font-family: var(--font-monospace); color: var(--text-muted); width: 20px; text-align: right; flex-shrink: 0; }
+
+/* Hub rows */
+.llm-sb-hub-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
   cursor: pointer;
+  border-radius: 4px;
+  padding: 2px 4px;
+  -webkit-tap-highlight-color: transparent;
 }
+.llm-sb-hub-row:hover { background: var(--background-modifier-hover); }
+.llm-sb-hub-rank { font-size: 9px; color: var(--text-faint); width: 14px; text-align: right; flex-shrink: 0; }
+.llm-sb-hub-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.llm-sb-hub-name { font-size: 9px; font-family: var(--font-monospace); color: var(--text-normal); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.llm-sb-hub-bar  { width: 36px; height: 6px; background: var(--background-modifier-border); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+.llm-sb-hub-deg  { font-size: 10px; font-family: var(--font-monospace); font-weight: 600; color: var(--text-accent); width: 20px; text-align: right; flex-shrink: 0; }
 
-.llm-graph-node-circle {
-  stroke: var(--background-primary);
-  stroke-width: 2px;
-  transition: r 0.1s;
-}
+/* ── Graph elements ── */
+.llm-graph-edge       { stroke: var(--text-faint); stroke-width: 1.2px; stroke-opacity: 0.55; }
+.llm-graph-edge-label { font-size: 9px; font-family: var(--font-monospace, monospace); fill: var(--text-faint); text-anchor: middle; }
 
-.llm-graph-node:hover .llm-graph-node-circle,
-.llm-graph-node:focus .llm-graph-node-circle {
-  r: 13;
-}
+.llm-graph-node        { cursor: pointer; }
+.llm-graph-node-circle { stroke: var(--background-primary); stroke-width: 2px; }
+.llm-graph-node:hover .llm-graph-node-circle { stroke: #fff; stroke-width: 3px; }
+.llm-graph-node-label  { font-size: 10px; font-family: var(--font-interface, sans-serif); fill: var(--text-normal); }
 
-.llm-graph-node-label {
-  font-size: 10px;
-  font-family: var(--font-interface, sans-serif);
-  fill: var(--text-normal);
-}
-
-/* ── Tooltip (desktop only; hidden on touch devices) ── */
+/* ── Tooltip ── */
 .llm-graph-tooltip {
   display: none;
   position: absolute;
@@ -115,18 +177,13 @@
   color: var(--text-normal);
   pointer-events: none;
   max-width: 200px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   z-index: 100;
   line-height: 1.5;
 }
+.llm-tp-type { font-family: var(--font-monospace); font-size: 10px; font-weight: 600; }
 
-.llm-graph-tooltip .llm-graph-type {
-  font-family: var(--font-monospace);
-  font-size: 10px;
-  color: var(--text-accent);
-}
-
-/* Hide tooltip and hover effects on touch-primary devices */
+/* Hide hover effects on touch devices */
 @media (hover: none) {
   .llm-graph-tooltip { display: none !important; }
 }
