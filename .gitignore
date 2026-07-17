@@ -1,0 +1,19 @@
+# Generated pipeline artifacts (per-run outputs)
+wiki/updates/
+wiki/compiled/
+wiki/graph/
+wiki/synthesis/
+wiki/decisions/
+pipeline/reconstructed/
+
+# Per-instance config (set when instantiating from template)
+pipeline/config.md
+
+# Obsidian workspace state
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/plugins/
+
+# OS
+.DS_Store
+Thumbs.db
