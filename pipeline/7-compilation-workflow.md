@@ -18,6 +18,17 @@ Compilation Layer MUST NOT generate stub synthesis nodes.
    - ontology compliance
    - semantic edge compliance
 
+1a. Run dead-link check (REQUIRED before proceeding):
+
+   Execute: `tools/validate/check-dead-links.sh`
+
+   - If exit code = 0: proceed.
+   - If exit code = 1: STOP. Write all dead links to `/pipeline/errors/<timestamp>-dead-links.md`.
+     Do NOT set any page to `reviewed`. Report errors and wait for instruction.
+
+   Dead links found during compilation are blocking errors.
+   A page with a broken `[[wikilink]]` cannot be marked `reviewed`.
+
 2. Normalize:
    - field formats
    - naming conventions
