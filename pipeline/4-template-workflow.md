@@ -34,6 +34,10 @@ raw documents into typed wiki pages.
    - ontology alignment (including OTF categories from /ontology/otf-types.md, if present)
    - semantic edge constraints (from /ontology/relationships.md)
 
+   **CRITICAL: metadata belongs ONLY in frontmatter.**
+   Do NOT repeat `type`, `otf`, `domain`, or any frontmatter field as a header line or bold text in the page body.
+   Frontmatter is the single source of truth for metadata. Body contains only knowledge content.
+
 3. Templates must be deterministic:
    - identical structure across all pages of the same type
    - no conversational text

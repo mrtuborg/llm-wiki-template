@@ -58,6 +58,7 @@ Generate:
 - Never produce conversational text.
 - Never reference external context.
 - Never ingest raw directly; only reconstructed raw.
+- **Never repeat frontmatter fields (type, otf, domain) as bold text or header lines in the page body. Frontmatter is the single source of truth for metadata.**
 
 ### WIKILINK RULE (CRITICAL)
 
