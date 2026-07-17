@@ -223,7 +223,7 @@
   min-height: 26px;
   border-radius: 999px;
   border: 1.5px solid var(--pill-color, #888);
-  background: color-mix(in srgb, var(--pill-color, #888) 18%, transparent);
+  background: color-mix(in srgb, var(--pill-color, #888) 14%, transparent);
   color: var(--text-normal);
   font-size: 10px;
   font-family: var(--font-monospace);
@@ -232,13 +232,9 @@
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
-.llm-type-pill::before {
-  content: '';
-  display: inline-block;
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--pill-color, #888);
+.llm-type-pill svg {
   flex-shrink: 0;
+  overflow: visible;
 }
 .llm-type-pill--off {
   opacity: 0.3;
