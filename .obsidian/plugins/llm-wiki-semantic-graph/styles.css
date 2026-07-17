@@ -187,3 +187,93 @@
 @media (hover: none) {
   .llm-graph-tooltip { display: none !important; }
 }
+
+/* ── Type filter bar ── */
+.llm-graph-typebar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-wrap: wrap;
+  background: var(--background-primary);
+  flex-shrink: 0;
+}
+.llm-graph-typebar-label {
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+.llm-type-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  min-height: 26px;
+  border-radius: 999px;
+  border: 1.5px solid var(--pill-color, #888);
+  background: color-mix(in srgb, var(--pill-color, #888) 18%, transparent);
+  color: var(--text-normal);
+  font-size: 10px;
+  font-family: var(--font-monospace);
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.llm-type-pill::before {
+  content: '';
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--pill-color, #888);
+  flex-shrink: 0;
+}
+.llm-type-pill--off {
+  opacity: 0.3;
+  background: transparent;
+}
+.llm-graph-btn--xs {
+  min-width: 36px;
+  min-height: 26px;
+  padding: 0 7px;
+  font-size: 10px;
+}
+
+/* ── Physics sliders ── */
+.llm-sb-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.llm-sb-slider-lbl {
+  font-size: 10px;
+  color: var(--text-muted);
+  width: 62px;
+  flex-shrink: 0;
+}
+.llm-sb-slider {
+  flex: 1;
+  height: 4px;
+  accent-color: var(--interactive-accent);
+  cursor: pointer;
+  /* iOS friendly touch target */
+  padding: 8px 0;
+  touch-action: none;
+}
+.llm-sb-slider-val {
+  font-size: 10px;
+  font-family: var(--font-monospace);
+  color: var(--text-accent);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Selection dim hint in tooltip ── */
+.llm-tp-hint {
+  color: var(--text-faint);
+  font-style: italic;
+}
