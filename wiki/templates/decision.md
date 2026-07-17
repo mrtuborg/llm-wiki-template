@@ -11,7 +11,6 @@ decision_type: ""
 
 # {{title}}
 
-**Type:** Decision  **OTF:** OTF:Choice  **Domain:** {{domain}}
 **Decision Type:** {{decision_type}}  *(Architectural / Design / Process / Domain / Epistemic)*
 
 > **Edge Rule:** Outbound edges MUST use real Obsidian wikilink syntax: `- **label** → [[page-slug]]`

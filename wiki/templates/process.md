@@ -10,7 +10,6 @@ status: draft
 
 # {{title}}
 
-**Type:** Process  **OTF:** OTF:Process  **Domain:** {{domain}}
 
 > **Edge Rule:** Outbound edges MUST use real Obsidian wikilink syntax: `- **label** → [[page-slug]]`
 > Never use HTML comments for edges. Inbound edges are descriptive only — they are built automatically when other pages link here.

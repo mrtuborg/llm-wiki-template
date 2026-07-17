@@ -10,7 +10,6 @@ status: draft
 
 # {{title}}
 
-**Type:** Synthesis  **OTF:** OTF:Integration  **Domain:** cross-domain
 
 > *Synthesis pages are created exclusively by the Synthesis Layer (Layer 8).*
 
