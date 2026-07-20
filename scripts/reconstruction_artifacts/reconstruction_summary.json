@@ -1,0 +1,103 @@
+{
+  "files": [
+    {
+      "source": "~/vaults/Vladimir/ChatGPT/amplifiers-analog.md",
+      "output": "pipeline/reconstructed/20260720T095432Z-amplifiers-analog.md",
+      "fragments": 20,
+      "domains": [
+        "Engineer/Electronics"
+      ]
+    },
+    {
+      "source": "~/vaults/Vladimir/ChatGPT/python-scripting.md",
+      "output": "pipeline/reconstructed/20260720T095432Z-python-scripting.md",
+      "fragments": 28,
+      "domains": [
+        "Engineer/DevOps",
+        "Engineer/Unrecognized",
+        "Self-care/Writing"
+      ]
+    },
+    {
+      "source": "~/vaults/Vladimir/ChatGPT/math-physics.md",
+      "output": "pipeline/reconstructed/20260720T095432Z-math-physics.md",
+      "fragments": 22,
+      "domains": [
+        "Self-care/Learning"
+      ]
+    },
+    {
+      "source": "~/vaults/Vladimir/ChatGPT/education-study.md",
+      "output": "pipeline/reconstructed/20260720T095432Z-education-study.md",
+      "fragments": 6,
+      "domains": [
+        "Self-care/Learning"
+      ]
+    },
+    {
+      "source": "~/vaults/Vladimir/ChatGPT/health-medical.md",
+      "output": "pipeline/reconstructed/20260720T095432Z-health-medical.md",
+      "fragments": 7,
+      "domains": [
+        "Self-care/Culture",
+        "Self-care/Health"
+      ]
+    },
+    {
+      "source": "~/vaults/Vladimir/ChatGPT/embedded-linux.md",
+      "output": "pipeline/reconstructed/20260720T095432Z-embedded-linux.md",
+      "fragments": 6,
+      "domains": [
+        "Engineer/Embedded",
+        "Engineer/Unrecognized"
+      ]
+    },
+    {
+      "source": "~/vaults/Vladimir/ChatGPT/_index.md",
+      "output": "pipeline/reconstructed/20260720T095432Z-chatgpt-index.md",
+      "fragments": 1,
+      "domains": [
+        "Meta/—"
+      ]
+    },
+    {
+      "source": "~/vaults/Vladimir/BioSort/PXE server.md",
+      "output": "pipeline/reconstructed/20260720T095432Z-pxe-server.md",
+      "fragments": 2,
+      "domains": [
+        "Engineer/DevOps",
+        "Engineer/Networking"
+      ]
+    },
+    {
+      "source": "~/vaults/Vladimir/Career/The Startup Idea Matrix.md",
+      "output": "pipeline/reconstructed/20260720T095432Z-startup-idea-matrix.md",
+      "fragments": 2,
+      "domains": [
+        "Entrepreneur/Entrepreneurship"
+      ]
+    },
+    {
+      "source": "~/vaults/Vladimir/Career/index.md",
+      "output": "pipeline/reconstructed/20260720T095432Z-career-index.md",
+      "fragments": 1,
+      "domains": [
+        "TechLead/Career"
+      ]
+    }
+  ],
+  "domain_counts": {
+    "Engineer/DevOps": 7,
+    "Engineer/Electronics": 20,
+    "Engineer/Embedded": 5,
+    "Engineer/Networking": 1,
+    "Engineer/Unrecognized": 11,
+    "Entrepreneur/Entrepreneurship": 2,
+    "Meta/—": 1,
+    "Self-care/Culture": 1,
+    "Self-care/Health": 6,
+    "Self-care/Learning": 28,
+    "Self-care/Writing": 12,
+    "TechLead/Career": 1
+  }
+}

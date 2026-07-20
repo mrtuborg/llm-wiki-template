@@ -32,6 +32,12 @@ print(f"EMBED_HOST={json.dumps(e.get('host','http://localhost:11434'))}")
 print(f"FALLBACK_SUBDOMAIN={json.dumps(w.get('fallback_subdomain','Unrecognized'))}")
 domains = w.get('domains', [])
 print(f"VALID_DOMAINS=({' '.join(json.dumps(d) for d in domains)})")
+a = cfg.get('agent', {})
+print(f"AGENT_MODEL={json.dumps(a.get('model','auto'))}")
+sm = a.get('stage_models', {}) or {}
+for stage, model in sm.items():
+    key = stage.replace('-','_').upper()
+    print(f"AGENT_MODEL_{key}={json.dumps(model)}")
 PYEOF
 }
 

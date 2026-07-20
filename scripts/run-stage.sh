@@ -22,6 +22,10 @@ STAGE="${1:?Usage: run-stage.sh <stage-name> [batch_id] [batch_size]}"
 BATCH_ID="${2:-batch-$(date -u +%Y%m%dT%H%M%SZ)}"
 BATCH_SIZE="${3:-3}"
 
+# Resolve model: stage-specific override > agent.model > auto
+_stage_key="AGENT_MODEL_$(echo "$STAGE" | tr '-' '_' | tr '[:lower:]' '[:upper:]')"
+PIPELINE_MODEL="${!_stage_key:-${AGENT_MODEL:-auto}}"
+
 echo ""
 echo "┌─────────────────────────────────────────────────────┐"
 echo "│  STAGE: $STAGE"
@@ -52,8 +56,10 @@ echo "[run-stage] Dirs: ${add_dir_args[*]}"
 echo "[run-stage] Launching gh copilot..."
 echo ""
 
+echo "[run-stage] Model: $PIPELINE_MODEL"
 gh copilot -- \
     -p "$(cat "$prompt_file")" \
+    --model "$PIPELINE_MODEL" \
     --allow-all-tools \
     --allow-all-paths \
     "${add_dir_args[@]}"

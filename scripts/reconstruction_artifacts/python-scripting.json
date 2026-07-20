@@ -1,0 +1,2515 @@
+{
+  "source": "/Users/vn/vaults/Vladimir/ChatGPT/python-scripting.md",
+  "lines": 11255,
+  "chars": 243437,
+  "heading_counts": {
+    "1": 221,
+    "2": 284,
+    "3": 320,
+    "4": 16,
+    "5": 0,
+    "6": 0
+  },
+  "headings": [
+    {
+      "line": 15,
+      "level": 1,
+      "title": "Python & Scripting"
+    },
+    {
+      "line": 19,
+      "level": 2,
+      "title": "Содержание"
+    },
+    {
+      "line": 52,
+      "level": 2,
+      "title": "Разговоры"
+    },
+    {
+      "line": 54,
+      "level": 3,
+      "title": "Script analysis and issues"
+    },
+    {
+      "line": 64,
+      "level": 1,
+      "title": "Reboot \"done\" marker"
+    },
+    {
+      "line": 75,
+      "level": 1,
+      "title": "Retry cadence"
+    },
+    {
+      "line": 79,
+      "level": 1,
+      "title": "Optional: bgscan handling"
+    },
+    {
+      "line": 83,
+      "level": 1,
+      "title": "Optional: scan_freq handling"
+    },
+    {
+      "line": 85,
+      "level": 1,
+      "title": "5Ghz only frequencies"
+    },
+    {
+      "line": 87,
+      "level": 1,
+      "title": "2.4Ghz only frequencies"
+    },
+    {
+      "line": 89,
+      "level": 1,
+      "title": "2.4 and 5Ghz frequencies"
+    },
+    {
+      "line": 92,
+      "level": 1,
+      "title": "Log pruning (prune only when huge to avoid disk churn)"
+    },
+    {
+      "line": 96,
+      "level": 1,
+      "title": "tiny logger usable before full config"
+    },
+    {
+      "line": 103,
+      "level": 1,
+      "title": "If invoked as @reboot, create the marker *before* locking so */10 won't skip forever"
+    },
+    {
+      "line": 108,
+      "level": 1,
+      "title": "Acquire single-instance lock"
+    },
+    {
+      "line": 161,
+      "level": 1,
+      "title": "Cron-safe PATH"
+    },
+    {
+      "line": 164,
+      "level": 1,
+      "title": "--- regular logger ---"
+    },
+    {
+      "line": 188,
+      "level": 1,
+      "title": "--- helpers for wpa_cli ---"
+    },
+    {
+      "line": 263,
+      "level": 1,
+      "title": "--- first-run gating (banner only for real runs) ---"
+    },
+    {
+      "line": 282,
+      "level": 1,
+      "title": "--- detect whether wpa_supplicant is already healthy (basic) ---"
+    },
+    {
+      "line": 291,
+      "level": 1,
+      "title": "--- only kill/restart if NOT healthy ---"
+    },
+    {
+      "line": 350,
+      "level": 1,
+      "title": "--- re-check health after possible restart ---"
+    },
+    {
+      "line": 360,
+      "level": 1,
+      "title": "--- require wpa_state=COMPLETED before doing checks ---"
+    },
+    {
+      "line": 366,
+      "level": 1,
+      "title": "--- configure bgscan (honoring CHECK_BG) ---"
+    },
+    {
+      "line": 385,
+      "level": 1,
+      "title": "--- configure scan_freq (honoring CHECK_SCANFREQ) ---"
+    },
+    {
+      "line": 408,
+      "level": 1,
+      "title": "What the script does (high level)"
+    },
+    {
+      "line": 430,
+      "level": 2,
+      "title": "What the script is trying to fix"
+    },
+    {
+      "line": 454,
+      "level": 1,
+      "title": "Permanent configuration files"
+    },
+    {
+      "line": 456,
+      "level": 2,
+      "title": "1) `/etc/wpa_supplicant/wpa_supplicant.conf`"
+    },
+    {
+      "line": 460,
+      "level": 1,
+      "title": "/etc/wpa_supplicant/wpa_supplicant.conf"
+    },
+    {
+      "line": 474,
+      "level": 1,
+      "title": "Why the cron script becomes unnecessary"
+    },
+    {
+      "line": 476,
+      "level": 2,
+      "title": "1. **Systemd now guarantees wpa_supplicant is always running**"
+    },
+    {
+      "line": 497,
+      "level": 2,
+      "title": "2. **`bgscan` and `scan_freq` will now be *permanent***"
+    },
+    {
+      "line": 508,
+      "level": 2,
+      "title": "3. **Systemd replaces the lock, logging, and retry logic**"
+    },
+    {
+      "line": 531,
+      "level": 1,
+      "title": "✔️ Problems you are describing (technical root causes)"
+    },
+    {
+      "line": 557,
+      "level": 1,
+      "title": "✅ What “Stable Mode” Means for Realtek USB WiFi"
+    },
+    {
+      "line": 560,
+      "level": 3,
+      "title": "1. **USB power-saving features**"
+    },
+    {
+      "line": 563,
+      "level": 3,
+      "title": "2. **Runtime power management of the WiFi chipset**"
+    },
+    {
+      "line": 566,
+      "level": 3,
+      "title": "3. **Unstable USB switching modes**"
+    },
+    {
+      "line": 569,
+      "level": 3,
+      "title": "4. **Energy-saving / low-power modes inside the Realtek firmware**"
+    },
+    {
+      "line": 572,
+      "level": 3,
+      "title": "5. **WMM / QoS auto-mode instabilities**"
+    },
+    {
+      "line": 586,
+      "level": 1,
+      "title": "What the script can leave behind / change (remnants and side-effects)"
+    },
+    {
+      "line": 605,
+      "level": 1,
+      "title": "rollback-swap-wpa.sh"
+    },
+    {
+      "line": 606,
+      "level": 1,
+      "title": "Roll back the effects of the \"swap_supplicant\" cron/script maintenance tool:"
+    },
+    {
+      "line": 607,
+      "level": 1,
+      "title": "- disable cron entries / systemd timers referencing it"
+    },
+    {
+      "line": 608,
+      "level": 1,
+      "title": "- stop stray/manual wpa_supplicant processes and restart systemd-managed unit"
+    },
+    {
+      "line": 609,
+      "level": 1,
+      "title": "- reconfigure wpa_supplicant from on-disk config (or restart service)"
+    },
+    {
+      "line": 610,
+      "level": 1,
+      "title": "- remove marker, lockdir, and archive log"
+    },
+    {
+      "line": 611,
+      "level": 1,
+      "title": "- remove common script install locations"
+    },
+    {
+      "line": 613,
+      "level": 1,
+      "title": "Usage:"
+    },
+    {
+      "line": 614,
+      "level": 1,
+      "title": "sudo ./rollback-swap-wpa.sh [--dry-run] [--yes] [--socket /run/wpa_supplicant-global]"
+    },
+    {
+      "line": 634,
+      "level": 1,
+      "title": "rollback-final-wpa.sh"
+    },
+    {
+      "line": 635,
+      "level": 1,
+      "title": "Roll back the \"final solution\" for wpa_supplicant + Realtek stable-mode changes:"
+    },
+    {
+      "line": 636,
+      "level": 1,
+      "title": "- disables and removes systemd override/template we may have added"
+    },
+    {
+      "line": 637,
+      "level": 1,
+      "title": "- archives /etc/wpa_supplicant/wpa_supplicant.conf (if present) and optionally restores from a backup"
+    },
+    {
+      "line": 638,
+      "level": 1,
+      "title": "- removes udev, modprobe, if-up.d"
+    },
+    {
+      "line": 656,
+      "level": 2,
+      "title": "1) Failure signals — when the initial script is not working (or is harmful)"
+    },
+    {
+      "line": 668,
+      "level": 3,
+      "title": "Fix layout and formatting"
+    },
+    {
+      "line": 701,
+      "level": 1,
+      "title": "WireGuard Over LTE with Policy Routing"
+    },
+    {
+      "line": 703,
+      "level": 2,
+      "title": "Overview"
+    },
+    {
+      "line": 716,
+      "level": 2,
+      "title": "Routing Policy Strategy"
+    },
+    {
+      "line": 738,
+      "level": 1,
+      "title": "WireGuard Over LTE with Policy Routing"
+    },
+    {
+      "line": 739,
+      "level": 2,
+      "title": "Technical Note"
+    },
+    {
+      "line": 754,
+      "level": 2,
+      "title": "Architecture and Routing Policy"
+    },
+    {
+      "line": 772,
+      "level": 3,
+      "title": "Install NVIDIA driver Debian"
+    },
+    {
+      "line": 785,
+      "level": 2,
+      "title": "1. Enable required repositories (very important)"
+    },
+    {
+      "line": 810,
+      "level": 2,
+      "title": "2. Install kernel headers (required)"
+    },
+    {
+      "line": 823,
+      "level": 2,
+      "title": "3. Install the NVIDIA driver (recommended way)"
+    },
+    {
+      "line": 842,
+      "level": 2,
+      "title": "1. Verify repositories (non-free is mandatory)"
+    },
+    {
+      "line": 864,
+      "level": 2,
+      "title": "2. Install kernel headers"
+    },
+    {
+      "line": 879,
+      "level": 2,
+      "title": "3. Install NVIDIA driver (recommended package)"
+    },
+    {
+      "line": 903,
+      "level": 2,
+      "title": "✅ Option A — Add your user to `sudo` group (recommended)"
+    },
+    {
+      "line": 905,
+      "level": 3,
+      "title": "1. Switch to root"
+    },
+    {
+      "line": 913,
+      "level": 3,
+      "title": "2. Install sudo (if not installed)"
+    },
+    {
+      "line": 921,
+      "level": 3,
+      "title": "3. Add your user (`vn`) to sudo group"
+    },
+    {
+      "line": 937,
+      "level": 3,
+      "title": "4. Log out completely (important)"
+    },
+    {
+      "line": 946,
+      "level": 3,
+      "title": "5. Test sudo"
+    },
+    {
+      "line": 958,
+      "level": 2,
+      "title": "Option B — Work as root (not recommended long-term)"
+    },
+    {
+      "line": 970,
+      "level": 2,
+      "title": "After sudo works — continue NVIDIA setup"
+    },
+    {
+      "line": 997,
+      "level": 2,
+      "title": "✅ Correct way (step by step)"
+    },
+    {
+      "line": 999,
+      "level": 3,
+      "title": "1. Switch to root"
+    },
+    {
+      "line": 1014,
+      "level": 3,
+      "title": "2. Install sudo (if needed)"
+    },
+    {
+      "line": 1022,
+      "level": 3,
+      "title": "3. Add your user to sudo group"
+    },
+    {
+      "line": 1031,
+      "level": 3,
+      "title": "4. Exit root and re-login"
+    },
+    {
+      "line": 1041,
+      "level": 3,
+      "title": "5. Test"
+    },
+    {
+      "line": 1053,
+      "level": 2,
+      "title": "⚠️ If `su -` fails"
+    },
+    {
+      "line": 1068,
+      "level": 2,
+      "title": "After this (next step)"
+    },
+    {
+      "line": 1085,
+      "level": 1,
+      "title": "trixie-updates, to get updates before a point release is made;"
+    },
+    {
+      "line": 1086,
+      "level": 1,
+      "title": "see https://www.debian.org/doc/manuals/debian-reference/ch02.en.html#_updates_and_backports"
+    },
+    {
+      "line": 1095,
+      "level": 2,
+      "title": "❌ What’s wrong right now"
+    },
+    {
+      "line": 1110,
+      "level": 2,
+      "title": "✅ Fix: add `contrib non-free`"
+    },
+    {
+      "line": 1119,
+      "level": 2,
+      "title": "1. Edit `/etc/apt/sources.list` (as root)"
+    },
+    {
+      "line": 1133,
+      "level": 2,
+      "title": "2. Corrected `sources.list` (copy exactly)"
+    },
+    {
+      "line": 1159,
+      "level": 2,
+      "title": "✅ What this means"
+    },
+    {
+      "line": 1169,
+      "level": 2,
+      "title": "✅ What you should do now (important order)"
+    },
+    {
+      "line": 1171,
+      "level": 3,
+      "title": "1. Finish the install"
+    },
+    {
+      "line": 1178,
+      "level": 3,
+      "title": "2. Make sure `nomodeset` is removed"
+    },
+    {
+      "line": 1203,
+      "level": 3,
+      "title": "3. Reboot"
+    },
+    {
+      "line": 1210,
+      "level": 2,
+      "title": "✅ What will happen after reboot"
+    },
+    {
+      "line": 1219,
+      "level": 2,
+      "title": "✅ Verify after reboot"
+    },
+    {
+      "line": 1272,
+      "level": 2,
+      "title": "✅ Correct fix (recommended)"
+    },
+    {
+      "line": 1276,
+      "level": 3,
+      "title": "1. Become root on Debian"
+    },
+    {
+      "line": 1283,
+      "level": 3,
+      "title": "2. Install locales (if not installed)"
+    },
+    {
+      "line": 1291,
+      "level": 3,
+      "title": "3. Configure locales"
+    },
+    {
+      "line": 1311,
+      "level": 3,
+      "title": "4. Verify"
+    },
+    {
+      "line": 1324,
+      "level": 3,
+      "title": "5. Log out and SSH again"
+    },
+    {
+      "line": 1334,
+      "level": 2,
+      "title": "✅ Why this happens (short explanation)"
+    },
+    {
+      "line": 1342,
+      "level": 2,
+      "title": "⚡ Alternative quic"
+    },
+    {
+      "line": 1436,
+      "level": 2,
+      "title": "🔍 What’s really happening"
+    },
+    {
+      "line": 1445,
+      "level": 3,
+      "title": "Explanation"
+    },
+    {
+      "line": 1469,
+      "level": 2,
+      "title": "✅ Correct fix (recommended): Force a valid LC_CTYPE on Debian"
+    },
+    {
+      "line": 1471,
+      "level": 3,
+      "title": "1. Set system-wide defaults"
+    },
+    {
+      "line": 1480,
+      "level": 3,
+      "title": "2. Log out and log back in (important)"
+    },
+    {
+      "line": 1489,
+      "level": 3,
+      "title": "3. Verify"
+    },
+    {
+      "line": 1539,
+      "level": 2,
+      "title": "✅ Final fix (2 commands, guaranteed)"
+    },
+    {
+      "line": 1541,
+      "level": 3,
+      "title": "1️⃣ Unset the broken locale in the current shell"
+    },
+    {
+      "line": 1553,
+      "level": 3,
+      "title": "2️⃣ Re-apply correct locale defaults"
+    },
+    {
+      "line": 1562,
+      "level": 2,
+      "title": "🔄 Refresh your environment"
+    },
+    {
+      "line": 1577,
+      "level": 2,
+      "title": "✅ Verify (this must be clean)"
+    },
+    {
+      "line": 1593,
+      "level": 2,
+      "title": "🧠 Why this works (important)"
+    },
+    {
+      "line": 1620,
+      "level": 2,
+      "title": "✅ Correct way to add Docker’s GPG key (Debian 13)"
+    },
+    {
+      "line": 1622,
+      "level": 3,
+      "title": "1. Make sure prerequisites exist"
+    },
+    {
+      "line": 1630,
+      "level": 3,
+      "title": "2. Create the keyrings directory (if missing)"
+    },
+    {
+      "line": 1637,
+      "level": 3,
+      "title": "3. Download Docker’s **actual** GPG key"
+    },
+    {
+      "line": 1652,
+      "level": 2,
+      "title": "4. Add the Docker repository (Debian 13 / trixie)"
+    },
+    {
+      "line": 1668,
+      "level": 2,
+      "title": "✅ Option A — Command line (recommended & simplest)"
+    },
+    {
+      "line": 1670,
+      "level": 3,
+      "title": "1. Install WireGuard"
+    },
+    {
+      "line": 1678,
+      "level": 3,
+      "title": "2. Put your config in the right place"
+    },
+    {
+      "line": 1692,
+      "level": 3,
+      "title": "3. Bring the VPN up"
+    },
+    {
+      "line": 1706,
+      "level": 3,
+      "title": "4. Verify connection"
+    },
+    {
+      "line": 1719,
+      "level": 3,
+      "title": "5. Bring it down"
+    },
+    {
+      "line": 1726,
+      "level": 2,
+      "title": "🔁 Auto-connect at boot (optional)"
+    },
+    {
+      "line": 1733,
+      "level": 2,
+      "title": "✅ Option B — NetworkManager (GUI-friendly)"
+    },
+    {
+      "line": 1737,
+      "level": 3,
+      "title": "1. Install plugin"
+    },
+    {
+      "line": 1750,
+      "level": 2,
+      "title": "🔍 What’s happening"
+    },
+    {
+      "line": 1768,
+      "level": 2,
+      "title": "✅ Fix option A (recommended & simplest): install `resolvconf`"
+    },
+    {
+      "line": 1787,
+      "level": 2,
+      "title": "✅ Fix option B (modern / cleaner): use systemd-resolved directly"
+    },
+    {
+      "line": 1791,
+      "level": 3,
+      "title": "1. Edit config"
+    },
+    {
+      "line": 1796,
+      "level": 3,
+      "title": "2. Remove or comment out the DNS line"
+    },
+    {
+      "line": 1798,
+      "level": 1,
+      "title": "DNS = 1.1.1.1"
+    },
+    {
+      "line": 1801,
+      "level": 3,
+      "title": "3. (Optional) Add PostUp / PostDown DNS via resolvectl"
+    },
+    {
+      "line": 1815,
+      "level": 2,
+      "title": "❌ What NOT to do"
+    },
+    {
+      "line": 1835,
+      "level": 2,
+      "title": "🔍 Root cause (most likely)"
+    },
+    {
+      "line": 1846,
+      "level": 2,
+      "title": "✅ Step 1 — Confirm DNS works *without* WireGuard"
+    },
+    {
+      "line": 1860,
+      "level": 3,
+      "title": "Quick test:"
+    },
+    {
+      "line": 1871,
+      "level": 2,
+      "title": "✅ Step 2 — Fix host DNS (Debian 13)"
+    },
+    {
+      "line": 1873,
+      "level": 3,
+      "title": "Recommended: systemd-resolved"
+    },
+    {
+      "line": 1907,
+      "level": 2,
+      "title": "✅ The clean fix (recommended)"
+    },
+    {
+      "line": 1911,
+      "level": 3,
+      "title": "1️⃣ Install systemd-resolved"
+    },
+    {
+      "line": 1919,
+      "level": 3,
+      "title": "2️⃣ Enable and start it"
+    },
+    {
+      "line": 1932,
+      "level": 3,
+      "title": "3️⃣ Fix `/etc/resolv.conf` (very important)"
+    },
+    {
+      "line": 1948,
+      "level": 3,
+      "title": "4️⃣ Test DNS (before WireGuard)"
+    },
+    {
+      "line": 1964,
+      "level": 2,
+      "title": "✅ Now retry WireGuard"
+    },
+    {
+      "line": 2015,
+      "level": 1,
+      "title": "✅ Emergency DNS Fix (2 minutes, safe)"
+    },
+    {
+      "line": 2021,
+      "level": 2,
+      "title": "1️⃣ Manually set `/etc/resolv.conf` (temporary)"
+    },
+    {
+      "line": 2041,
+      "level": 2,
+      "title": "2️⃣ Confirm DNS works now"
+    },
+    {
+      "line": 2053,
+      "level": 2,
+      "title": "3️⃣ Retry the install"
+    },
+    {
+      "line": 2064,
+      "level": 2,
+      "title": "4️⃣ Enable systemd-resolved"
+    },
+    {
+      "line": 2077,
+      "level": 2,
+      "title": "5️⃣ Switch `/etc/resolv.con"
+    },
+    {
+      "line": 2085,
+      "level": 3,
+      "title": "What this means (important)"
+    },
+    {
+      "line": 2098,
+      "level": 1,
+      "title": "🚑 Immediate recovery: restore DNS (guaranteed)"
+    },
+    {
+      "line": 2102,
+      "level": 2,
+      "title": "1️⃣ Stop anything broken"
+    },
+    {
+      "line": 2109,
+      "level": 2,
+      "title": "2️⃣ Replace `/etc/resolv.conf` with a static file"
+    },
+    {
+      "line": 2130,
+      "level": 2,
+      "title": "3️⃣ Verify DNS (this MUST work)"
+    },
+    {
+      "line": 2155,
+      "level": 1,
+      "title": "✅ Step-by-step: make `resolvectl` work (Debian 13, correct way)"
+    },
+    {
+      "line": 2157,
+      "level": 2,
+      "title": "1️⃣ Make sure systemd + dbus are healthy"
+    },
+    {
+      "line": 2174,
+      "level": 2,
+      "title": "2️⃣ Ensure required packages are installed"
+    },
+    {
+      "line": 2185,
+      "level": 2,
+      "title": "3️⃣ Enable and start systemd-resolved (clean)"
+    },
+    {
+      "line": 2229,
+      "level": 2,
+      "title": "✅ Interpretation of your current state"
+    },
+    {
+      "line": 2231,
+      "level": 3,
+      "title": "Global"
+    },
+    {
+      "line": 2240,
+      "level": 3,
+      "title": "Active interface (important)"
+    },
+    {
+      "line": 2257,
+      "level": 3,
+      "title": "Other interfaces"
+    },
+    {
+      "line": 2265,
+      "level": 2,
+      "title": "✅ DNS resolution test (sanity check)"
+    },
+    {
+      "line": 2277,
+      "level": 2,
+      "title": "✅ Now WireGuard will work cleanly"
+    },
+    {
+      "line": 2313,
+      "level": 2,
+      "title": "🔍 What exactly is failing"
+    },
+    {
+      "line": 2335,
+      "level": 2,
+      "title": "✅ Correct fix (recommended): use systemd-resolved with WireGuard"
+    },
+    {
+      "line": 2339,
+      "level": 3,
+      "title": "1️⃣ Edit your WireGuard config"
+    },
+    {
+      "line": 2347,
+      "level": 3,
+      "title": "2️⃣ Fix the `[Interface]` section"
+    },
+    {
+      "line": 2393,
+      "level": 2,
+      "title": "🔴 Root cause (clear and definitive)"
+    },
+    {
+      "line": 2423,
+      "level": 2,
+      "title": "✅ The correct fix (mandatory)"
+    },
+    {
+      "line": 2425,
+      "level": 3,
+      "title": "**You must remove the `DNS =` line entirely**"
+    },
+    {
+      "line": 2431,
+      "level": 2,
+      "title": "✅ Corrected `/etc/wireguard/wg0.conf`"
+    },
+    {
+      "line": 2439,
+      "level": 3,
+      "title": "Replace the `[Interface]` section with **exactly this**:"
+    },
+    {
+      "line": 2473,
+      "level": 1,
+      "title": "✅ Recommended solution: `pypiserver` in Docker"
+    },
+    {
+      "line": 2475,
+      "level": 2,
+      "title": "1️⃣ Create directories on the host"
+    },
+    {
+      "line": 2485,
+      "level": 2,
+      "title": "2️⃣ (Optional but recommended) Create users/passwords"
+    },
+    {
+      "line": 2501,
+      "level": 2,
+      "title": "3️⃣ Run pypiserver with Docker"
+    },
+    {
+      "line": 2503,
+      "level": 3,
+      "title": "Simple (no auth, local use only)"
+    },
+    {
+      "line": 2515,
+      "level": 3,
+      "title": "🔐 Recommended (with authentication)"
+    },
+    {
+      "line": 2542,
+      "level": 1,
+      "title": "✅ Goal (your requirements)"
+    },
+    {
+      "line": 2552,
+      "level": 1,
+      "title": "✅ Recommended image"
+    },
+    {
+      "line": 2557,
+      "level": 1,
+      "title": "1️⃣ Create host-side config only"
+    },
+    {
+      "line": 2564,
+      "level": 3,
+      "title": "Create auth file (optional but recommended)"
+    },
+    {
+      "line": 2572,
+      "level": 1,
+      "title": "2️⃣ Create Docker volume for packages"
+    },
+    {
+      "line": 2585,
+      "level": 1,
+      "title": "3️⃣ Run pypiserver (correct volume layout)"
+    },
+    {
+      "line": 2612,
+      "level": 2,
+      "title": "📁 Host layout (clean & minimal)"
+    },
+    {
+      "line": 2623,
+      "level": 2,
+      "title": "📄 `docker-compose.yaml`"
+    },
+    {
+      "line": 2633,
+      "level": 3,
+      "title": "Paste this **exact file**:"
+    },
+    {
+      "line": 2766,
+      "level": 2,
+      "title": "🔴 What went wrong (exactly)"
+    },
+    {
+      "line": 2774,
+      "level": 3,
+      "title": "Why this happens"
+    },
+    {
+      "line": 2799,
+      "level": 2,
+      "title": "✅ Correct CLI syntax (this is the fix)"
+    },
+    {
+      "line": 2803,
+      "level": 3,
+      "title": "✅ Correct command structure"
+    },
+    {
+      "line": 2810,
+      "level": 2,
+      "title": "✅ Fixed `docker-compose.yaml`"
+    },
+    {
+      "line": 2824,
+      "level": 2,
+      "title": "✅ Recommended (server-safe): mask sleep targets"
+    },
+    {
+      "line": 2848,
+      "level": 2,
+      "title": "🔁 Re-enable later (if ever needed)"
+    },
+    {
+      "line": 2856,
+      "level": 2,
+      "title": "✅ Disable systemd idle actions (extra safety)"
+    },
+    {
+      "line": 2883,
+      "level": 2,
+      "title": "🧠 Why"
+    },
+    {
+      "line": 2889,
+      "level": 3,
+      "title": "Python Log Conversion"
+    },
+    {
+      "line": 2898,
+      "level": 2,
+      "title": "1. Single numbers (built-in `math`)"
+    },
+    {
+      "line": 2909,
+      "level": 2,
+      "title": "2. Lists / arrays (NumPy – most common)"
+    },
+    {
+      "line": 2922,
+      "level": 2,
+      "title": "3. Pandas DataFrame / Series"
+    },
+    {
+      "line": 2935,
+      "level": 2,
+      "title": "4. Handling zeros or negative values (very important ⚠️)"
+    },
+    {
+      "line": 2939,
+      "level": 3,
+      "title": "Option A: Add a small constant"
+    },
+    {
+      "line": 2944,
+      "level": 3,
+      "title": "Option B: Mask invalid values"
+    },
+    {
+      "line": 2951,
+      "level": 2,
+      "title": "5. Converting back (exponentiation)"
+    },
+    {
+      "line": 2959,
+      "level": 2,
+      "title": "6. Log-transform for machine learning (common pattern)"
+    },
+    {
+      "line": 2971,
+      "level": 2,
+      "title": "1️⃣ Two graphs on the **same plot**"
+    },
+    {
+      "line": 2992,
+      "level": 2,
+      "title": "2️⃣ Two graphs as **separate subplots**"
+    },
+    {
+      "line": 3017,
+      "level": 2,
+      "title": "3️⃣ Two graphs with different Y-axes"
+    },
+    {
+      "line": 3035,
+      "level": 3,
+      "title": "Which one do you need?"
+    },
+    {
+      "line": 3069,
+      "level": 2,
+      "title": "🔢 Gitte verdier"
+    },
+    {
+      "line": 3077,
+      "level": 2,
+      "title": "✅ Hva programmet gjør"
+    },
+    {
+      "line": 3089,
+      "level": 2,
+      "title": "🐍 Python-kode"
+    },
+    {
+      "line": 3095,
+      "level": 1,
+      "title": "Gitte verdier"
+    },
+    {
+      "line": 3100,
+      "level": 1,
+      "title": "Knekkfrekvens"
+    },
+    {
+      "line": 3103,
+      "level": 1,
+      "title": "Frekvensakse (logaritmisk)"
+    },
+    {
+      "line": 3106,
+      "level": 1,
+      "title": "Overføringsfunksjon"
+    },
+    {
+      "line": 3109,
+      "level": 1,
+      "title": "Magnitude og fase"
+    },
+    {
+      "line": 3113,
+      "level": 1,
+      "title": "Begrens magnitude til minimum -30 dB"
+    },
+    {
+      "line": 3116,
+      "level": 1,
+      "title": "Plot"
+    },
+    {
+      "line": 3119,
+      "level": 1,
+      "title": "Magnitude-plot"
+    },
+    {
+      "line": 3135,
+      "level": 2,
+      "title": "✅ Riktig måte: begrense grafen (ikke data)"
+    },
+    {
+      "line": 3137,
+      "level": 3,
+      "title": "Bruk `plt.ylim()`"
+    },
+    {
+      "line": 3149,
+      "level": 2,
+      "title": "🔧 Eksempel (riktig løsning)"
+    },
+    {
+      "line": 3164,
+      "level": 2,
+      "title": "❌ Dette er FEIL hvis oppgaven sier «ikke data»"
+    },
+    {
+      "line": 3172,
+      "level": 2,
+      "title": "📌 Kort oppsummert"
+    },
+    {
+      "line": 3187,
+      "level": 3,
+      "title": "Quoting Bug Fix"
+    },
+    {
+      "line": 3204,
+      "level": 2,
+      "title": "What the error is telling you"
+    },
+    {
+      "line": 3243,
+      "level": 2,
+      "title": "The root cause (classic shell pitfall)"
+    },
+    {
+      "line": 3247,
+      "level": 3,
+      "title": "Typical broken patterns"
+    },
+    {
+      "line": 3272,
+      "level": 3,
+      "title": "What to do next (quick)"
+    },
+    {
+      "line": 3283,
+      "level": 3,
+      "title": "If you want a fast self-check meanwhile"
+    },
+    {
+      "line": 3313,
+      "level": 2,
+      "title": "🎯 The actual quoting bug (found)"
+    },
+    {
+      "line": 3321,
+      "level": 3,
+      "title": "Why this breaks"
+    },
+    {
+      "line": 3353,
+      "level": 2,
+      "title": "✅ Correct fix (minimal & safe)"
+    },
+    {
+      "line": 3361,
+      "level": 3,
+      "title": "Распределение x для графика"
+    },
+    {
+      "line": 3372,
+      "level": 1,
+      "title": "диапазон x от 0 до 3 мм"
+    },
+    {
+      "line": 3375,
+      "level": 1,
+      "title": "пример функции"
+    },
+    {
+      "line": 3378,
+      "level": 1,
+      "title": "построение графика"
+    },
+    {
+      "line": 3417,
+      "level": 3,
+      "title": "1. Python list"
+    },
+    {
+      "line": 3430,
+      "level": 3,
+      "title": "2. NumPy array"
+    },
+    {
+      "line": 3448,
+      "level": 3,
+      "title": "3. Index of the maximum value"
+    },
+    {
+      "line": 3463,
+      "level": 3,
+      "title": "4. Maximum of a function array (typical for graphs)"
+    },
+    {
+      "line": 3487,
+      "level": 3,
+      "title": "Example"
+    },
+    {
+      "line": 3493,
+      "level": 1,
+      "title": "take first half"
+    },
+    {
+      "line": 3496,
+      "level": 1,
+      "title": "mirror it"
+    },
+    {
+      "line": 3499,
+      "level": 1,
+      "title": "append to original array"
+    },
+    {
+      "line": 3510,
+      "level": 3,
+      "title": "Explanation"
+    },
+    {
+      "line": 3515,
+      "level": 3,
+      "title": "Short version"
+    },
+    {
+      "line": 3520,
+      "level": 3,
+      "title": "If you are using a Python list (not NumPy)"
+    },
+    {
+      "line": 3539,
+      "level": 3,
+      "title": "1. NumPy (наиболее удобно)"
+    },
+    {
+      "line": 3564,
+      "level": 3,
+      "title": "2. Через `zip` (универсально для Python)"
+    },
+    {
+      "line": 3578,
+      "level": 3,
+      "title": "3. Если нужен NumPy массив точек"
+    },
+    {
+      "line": 3586,
+      "level": 3,
+      "title": "4. Еще один быстрый способ (NumPy)"
+    },
+    {
+      "line": 3640,
+      "level": 2,
+      "title": "Numerical parameters"
+    },
+    {
+      "line": 3657,
+      "level": 1,
+      "title": "Python code to plot \\(y(x)\\)"
+    },
+    {
+      "line": 3663,
+      "level": 1,
+      "title": "parameters"
+    },
+    {
+      "line": 3670,
+      "level": 1,
+      "title": "moment of inertia"
+    },
+    {
+      "line": 3673,
+      "level": 1,
+      "title": "distributed load"
+    },
+    {
+      "line": 3676,
+      "level": 1,
+      "title": "x coordinates"
+    },
+    {
+      "line": 3679,
+      "level": 1,
+      "title": "deflection function"
+    },
+    {
+      "line": 3682,
+      "level": 1,
+      "title": "plot"
+    },
+    {
+      "line": 3702,
+      "level": 3,
+      "title": "Why this form appears"
+    },
+    {
+      "line": 3724,
+      "level": 3,
+      "title": "Maximum deflection"
+    },
+    {
+      "line": 3735,
+      "level": 3,
+      "title": "Small notation remark"
+    },
+    {
+      "line": 3760,
+      "level": 3,
+      "title": "Для вашей задачи"
+    },
+    {
+      "line": 3783,
+      "level": 3,
+      "title": "Итог"
+    },
+    {
+      "line": 3806,
+      "level": 3,
+      "title": "Python код"
+    },
+    {
+      "line": 3812,
+      "level": 1,
+      "title": "параметры"
+    },
+    {
+      "line": 3819,
+      "level": 1,
+      "title": "момент инерции"
+    },
+    {
+      "line": 3822,
+      "level": 1,
+      "title": "координата вдоль балки"
+    },
+    {
+      "line": 3825,
+      "level": 1,
+      "title": "функция прогиба"
+    },
+    {
+      "line": 3828,
+      "level": 1,
+      "title": "график"
+    },
+    {
+      "line": 3838,
+      "level": 3,
+      "title": "Что делает код"
+    },
+    {
+      "line": 3890,
+      "level": 3,
+      "title": "Итог"
+    },
+    {
+      "line": 3937,
+      "level": 3,
+      "title": "Числитель"
+    },
+    {
+      "line": 3952,
+      "level": 3,
+      "title": "Знаменатель"
+    },
+    {
+      "line": 3968,
+      "level": 3,
+      "title": "Делим"
+    },
+    {
+      "line": 3976,
+      "level": 3,
+      "title": "Итог"
+    },
+    {
+      "line": 4011,
+      "level": 2,
+      "title": "1. Временная постоянная"
+    },
+    {
+      "line": 4026,
+      "level": 2,
+      "title": "2. Подставим данные"
+    },
+    {
+      "line": 4047,
+      "level": 3,
+      "title": "Вычислим \\(\\tau\\)"
+    },
+    {
+      "line": 4065,
+      "level": 2,
+      "title": "3. Физическая проверка"
+    },
+    {
+      "line": 4109,
+      "level": 3,
+      "title": "Откуда иногда появляется \\(l\\)"
+    },
+    {
+      "line": 4136,
+      "level": 3,
+      "title": "Связь двух форм"
+    },
+    {
+      "line": 4158,
+      "level": 3,
+      "title": "Для вашей задачи"
+    },
+    {
+      "line": 4188,
+      "level": 2,
+      "title": "1. Тепловая ёмкость"
+    },
+    {
+      "line": 4205,
+      "level": 2,
+      "title": "2. Тепловое сопротивление конвекции"
+    },
+    {
+      "line": 4224,
+      "level": 2,
+      "title": "3. Временная постоянная"
+    },
+    {
+      "line": 4244,
+      "level": 2,
+      "title": "4. Проверка размерности"
+    },
+    {
+      "line": 4266,
+      "level": 3,
+      "title": "Физический смысл"
+    },
+    {
+      "line": 4290,
+      "level": 2,
+      "title": "1. Теплопроводность (conduction)"
+    },
+    {
+      "line": 4308,
+      "level": 2,
+      "title": "2. Конвекция (охлаждение воздухом)"
+    },
+    {
+      "line": 4325,
+      "level": 2,
+      "title": "3. Почему в вашей задаче нет \\(l\\)"
+    },
+    {
+      "line": 4346,
+      "level": 2,
+      "title": "4. Когда \\(l\\) всё-таки появляется"
+    },
+    {
+      "line": 4372,
+      "level": 2,
+      "title": "1. \\(k\\) — теплопроводность (thermal conductivity)"
+    },
+    {
+      "line": 4401,
+      "level": 2,
+      "title": "2. \\(h\\) — коэффициент теплоотдачи (heat transfer coefficient)"
+    },
+    {
+      "line": 4422,
+      "level": 2,
+      "title": "3. Главное отличие"
+    },
+    {
+      "line": 4431,
+      "level": 2,
+      "title": "4. В вашей задаче"
+    },
+    {
+      "line": 4455,
+      "level": 3,
+      "title": "Matplotlib backend error"
+    },
+    {
+      "line": 4470,
+      "level": 2,
+      "title": "Option 1 — Install `ipympl` (recommended for interactive plots in Jupyter)"
+    },
+    {
+      "line": 4494,
+      "level": 2,
+      "title": "Option 2 — Use a supported backend (simplest fix)"
+    },
+    {
+      "line": 4513,
+      "level": 2,
+      "title": "Option 3 — If your code explicitly sets the backend"
+    },
+    {
+      "line": 4531,
+      "level": 2,
+      "title": "Quick diagnostic"
+    },
+    {
+      "line": 4562,
+      "level": 2,
+      "title": "Fastest fix"
+    },
+    {
+      "line": 4584,
+      "level": 2,
+      "title": "If you want interactive plots (zoom, pan)"
+    },
+    {
+      "line": 4600,
+      "level": 2,
+      "title": "Why this happens"
+    },
+    {
+      "line": 4612,
+      "level": 2,
+      "title": "Recommended setup for Jupyter"
+    },
+    {
+      "line": 4664,
+      "level": 1,
+      "title": "Correct fixes"
+    },
+    {
+      "line": 4666,
+      "level": 2,
+      "title": "Option 1 — Install `ipympl` (recommended)"
+    },
+    {
+      "line": 4690,
+      "level": 2,
+      "title": "Option 2 — Remove widget backend"
+    },
+    {
+      "line": 4702,
+      "level": 1,
+      "title": "Clean working version of your notebook cell"
+    },
+    {
+      "line": 4729,
+      "level": 1,
+      "title": "Step-by-step fix"
+    },
+    {
+      "line": 4731,
+      "level": 2,
+      "title": "1. Upgrade the required Python packages"
+    },
+    {
+      "line": 4747,
+      "level": 2,
+      "title": "2. Enable widgets extension"
+    },
+    {
+      "line": 4759,
+      "level": 2,
+      "title": "3. Restart Jupyter completely"
+    },
+    {
+      "line": 4770,
+      "level": 2,
+      "title": "4. Test with a minimal example"
+    },
+    {
+      "line": 4789,
+      "level": 1,
+      "title": "Why this error happens"
+    },
+    {
+      "line": 4836,
+      "level": 1,
+      "title": "Fix for JupyterLab environments"
+    },
+    {
+      "line": 4848,
+      "level": 1,
+      "title": "Verify installation"
+    },
+    {
+      "line": 4865,
+      "level": 1,
+      "title": "Test in a new notebook cell"
+    },
+    {
+      "line": 4882,
+      "level": 1,
+      "title": "If it still fails (common in some Docker images)"
+    },
+    {
+      "line": 4936,
+      "level": 1,
+      "title": "Step 1 — Check if the extension exists"
+    },
+    {
+      "line": 4954,
+      "level": 1,
+      "title": "Step 2 — Install the JupyterLab extension"
+    },
+    {
+      "line": 4966,
+      "level": 1,
+      "title": "Step 3 — Verify the backend"
+    },
+    {
+      "line": 4984,
+      "level": 1,
+      "title": "Step 4 — Minimal test"
+    },
+    {
+      "line": 4998,
+      "level": 3,
+      "title": "Script Debugging Tips"
+    },
+    {
+      "line": 5023,
+      "level": 2,
+      "title": "1. `return` used in a script (should be `exit`)"
+    },
+    {
+      "line": 5041,
+      "level": 2,
+      "title": "2. `sed -i` behavior differs across systems"
+    },
+    {
+      "line": 5064,
+      "level": 2,
+      "title": "3. Pattern `MACHINE ??=` is likely incorrect"
+    },
+    {
+      "line": 5082,
+      "level": 2,
+      "title": "1. `return` used outside a sourced script or function"
+    },
+    {
+      "line": 5095,
+      "level": 3,
+      "title": "Fix"
+    },
+    {
+      "line": 5107,
+      "level": 2,
+      "title": "2. `sed -i` is not portable across environments"
+    },
+    {
+      "line": 5120,
+      "level": 2,
+      "title": "3. `sed` replacement syntax is fragile"
+    },
+    {
+      "line": 5161,
+      "level": 1,
+      "title": "Recommended approach"
+    },
+    {
+      "line": 5163,
+      "level": 3,
+      "title": "Key ideas"
+    },
+    {
+      "line": 5170,
+      "level": 2,
+      "title": "Improved script"
+    },
+    {
+      "line": 5200,
+      "level": 1,
+      "title": "recreate config from sample"
+    },
+    {
+      "line": 5203,
+      "level": 1,
+      "title": "override machine setting"
+    },
+    {
+      "line": 5206,
+      "level": 1,
+      "title": "Automatically set by init script"
+    },
+    {
+      "line": 5220,
+      "level": 1,
+      "title": "1. `cp` will fail if directories do not exist"
+    },
+    {
+      "line": 5246,
+      "level": 1,
+      "title": "2. Overwriting an existing `local.conf`"
+    },
+    {
+      "line": 5269,
+      "level": 1,
+      "title": "3. Duplicate `MACHINE` lines if rerun"
+    },
+    {
+      "line": 5305,
+      "level": 1,
+      "title": "Why this happens"
+    },
+    {
+      "line": 5323,
+      "level": 1,
+      "title": "Verify quickly"
+    },
+    {
+      "line": 5341,
+      "level": 1,
+      "title": "Common cause"
+    },
+    {
+      "line": 5355,
+      "level": 1,
+      "title": "Fix 1 (most likely): Add `meta-openembedded`"
+    },
+    {
+      "line": 5374,
+      "level": 3,
+      "title": "Исправление ошибки TypeError"
+    },
+    {
+      "line": 5400,
+      "level": 3,
+      "title": "Как исправить"
+    },
+    {
+      "line": 5410,
+      "level": 3,
+      "title": "Исправленный код"
+    },
+    {
+      "line": 5429,
+      "level": 3,
+      "title": "Более \"numpy-шный\" (правильный) вариант без цикла"
+    },
+    {
+      "line": 5454,
+      "level": 3,
+      "title": "Таблицы в Jupyter PDF"
+    },
+    {
+      "line": 5469,
+      "level": 2,
+      "title": "1. Разное количество столбцов"
+    },
+    {
+      "line": 5496,
+      "level": 2,
+      "title": "2. Широкие таблицы в LaTeX"
+    },
+    {
+      "line": 5532,
+      "level": 2,
+      "title": "1. Масштабировать таблицу (`\\resizebox`) — самый простой"
+    },
+    {
+      "line": 5556,
+      "level": 2,
+      "title": "2. Использовать `tabularx` (адаптивная ширина)"
+    },
+    {
+      "line": 5572,
+      "level": 2,
+      "title": "3. Уменьшить шрифт таблицы"
+    },
+    {
+      "line": 5592,
+      "level": 2,
+      "title": "4. Повернуть страницу (для очень широких таблиц"
+    },
+    {
+      "line": 5600,
+      "level": 3,
+      "title": "1. Массивы сигналов"
+    },
+    {
+      "line": 5617,
+      "level": 3,
+      "title": "2. Выравнивание длины строк"
+    },
+    {
+      "line": 5628,
+      "level": 3,
+      "title": "3. Генерация LaTeX-таблицы"
+    },
+    {
+      "line": 5644,
+      "level": 3,
+      "title": "4. Результат (вставить в Markdown-ячейку)"
+    },
+    {
+      "line": 5666,
+      "level": 3,
+      "title": "Практическое преимущество"
+    },
+    {
+      "line": 5674,
+      "level": 3,
+      "title": "Python requirement error"
+    },
+    {
+      "line": 5730,
+      "level": 1,
+      "title": "Recommended Fix (Simplest)"
+    },
+    {
+      "line": 5759,
+      "level": 1,
+      "title": "Correct Fix"
+    },
+    {
+      "line": 5763,
+      "level": 3,
+      "title": "Current (problematic)"
+    },
+    {
+      "line": 5774,
+      "level": 3,
+      "title": "Correct"
+    },
+    {
+      "line": 5787,
+      "level": 1,
+      "title": "Dependency Handling"
+    },
+    {
+      "line": 5807,
+      "level": 1,
+      "title": "Example Clean Dependency Block"
+    },
+    {
+      "line": 5836,
+      "level": 1,
+      "title": "1. Obsolete License"
+    },
+    {
+      "line": 5846,
+      "level": 3,
+      "title": "Fix"
+    },
+    {
+      "line": 5854,
+      "level": 1,
+      "title": "2. `.so` Files in `-dev` Package (dev-elf)"
+    },
+    {
+      "line": 5881,
+      "level": 3,
+      "title": "Fix"
+    },
+    {
+      "line": 5892,
+      "level": 1,
+      "title": "3. Runtime Dependency on `-dev`"
+    },
+    {
+      "line": 5932,
+      "level": 1,
+      "title": "Correct Packaging Layout"
+    },
+    {
+      "line": 5947,
+      "level": 3,
+      "title": "Fix"
+    },
+    {
+      "line": 5965,
+      "level": 1,
+      "title": "Also Keep the License Fix"
+    },
+    {
+      "line": 5973,
+      "level": 1,
+      "title": "Final Packaging Section (Recommended)"
+    },
+    {
+      "line": 6001,
+      "level": 1,
+      "title": "Correct Fix"
+    },
+    {
+      "line": 6019,
+      "level": 1,
+      "title": "Important: Clean Previous Overrides"
+    },
+    {
+      "line": 6032,
+      "level": 1,
+      "title": "Recommended Final Packaging Section"
+    },
+    {
+      "line": 6049,
+      "level": 1,
+      "title": "After Changing Packa"
+    },
+    {
+      "line": 6080,
+      "level": 1,
+      "title": "Enable all features for development image"
+    },
+    {
+      "line": 6082,
+      "level": 3,
+      "title": "pcre hwloc"
+    },
+    {
+      "line": 6084,
+      "level": 3,
+      "title": "PACKAGECONFIG[pcre] = \"--with-pcre,--without-pcre,libpcre\""
+    },
+    {
+      "line": 6085,
+      "level": 3,
+      "title": "PACKAGECONFIG[hwloc] = \"--with-hwloc,--without-hwloc,hwloc\""
+    },
+    {
+      "line": 6093,
+      "level": 1,
+      "title": "Package split for tools"
+    },
+    {
+      "line": 6128,
+      "level": 1,
+      "title": "Main tools provided by aircrack-ng"
+    },
+    {
+      "line": 6162,
+      "level": 1,
+      "title": "Correct Fix"
+    },
+    {
+      "line": 6166,
+      "level": 3,
+      "title": "Replace this"
+    },
+    {
+      "line": 6175,
+      "level": 3,
+      "title": "With"
+    },
+    {
+      "line": 6187,
+      "level": 1,
+      "title": "Also Adjust Runtime Library Pattern"
+    },
+    {
+      "line": 6246,
+      "level": 1,
+      "title": "Enable all features for development image"
+    },
+    {
+      "line": 6248,
+      "level": 3,
+      "title": "pcre hwloc"
+    },
+    {
+      "line": 6250,
+      "level": 3,
+      "title": "PACKAGECONFIG[pcre] = \"--with-pcre,--without-pcre,libpcre\""
+    },
+    {
+      "line": 6251,
+      "level": 3,
+      "title": "PACKAGECONFIG[hwloc] = \"--with-hwloc,--without-hwloc,hwloc\""
+    },
+    {
+      "line": 6259,
+      "level": 1,
+      "title": "Package split for tools"
+    },
+    {
+      "line": 6294,
+      "level": 1,
+      "title": "Main tools provided by aircrack-ng"
+    },
+    {
+      "line": 6334,
+      "level": 1,
+      "title": "Correct Packaging Rules"
+    },
+    {
+      "line": 6363,
+      "level": 1,
+      "title": "Also Remove Manual `PACKAGES`"
+    },
+    {
+      "line": 6405,
+      "level": 1,
+      "title": "Enable all features for development image"
+    },
+    {
+      "line": 6407,
+      "level": 3,
+      "title": "pcre hwloc"
+    },
+    {
+      "line": 6409,
+      "level": 3,
+      "title": "PACKAGECONFIG[pcre] = \"--with-pcre,--without-pcre,libpcre\""
+    },
+    {
+      "line": 6410,
+      "level": 3,
+      "title": "PACKAGECONFIG[hwloc] = \"--with-hwloc,--without-hwloc,hwloc\""
+    },
+    {
+      "line": 6418,
+      "level": 1,
+      "title": "Package split for tools"
+    },
+    {
+      "line": 6419,
+      "level": 2,
+      "title": "PACKAGES = \"${PN} ${PN}-dbg ${PN}-dev ${PN}-doc\""
+    },
+    {
+      "line": 6452,
+      "level": 1,
+      "title": "Main tools provided by aircrack-ng"
+    },
+    {
+      "line": 6475,
+      "level": 2,
+      "title": "Correct approach"
+    },
+    {
+      "line": 6500,
+      "level": 2,
+      "title": "Clean build"
+    },
+    {
+      "line": 6530,
+      "level": 2,
+      "title": "Correct fix"
+    },
+    {
+      "line": 6546,
+      "level": 2,
+      "title": "Then explicitly assign files"
+    },
+    {
+      "line": 6605,
+      "level": 1,
+      "title": "Proper Fix (Recommended)"
+    },
+    {
+      "line": 6640,
+      "level": 1,
+      "title": "Pac"
+    },
+    {
+      "line": 6646,
+      "level": 3,
+      "title": "Ошибка с .style в pandas"
+    },
+    {
+      "line": 6688,
+      "level": 2,
+      "title": "Решение"
+    },
+    {
+      "line": 6692,
+      "level": 3,
+      "title": "В Jupyter"
+    },
+    {
+      "line": 6707,
+      "level": 2,
+      "title": "Альтернатива (если нельзя устанавливать пакеты)"
+    },
+    {
+      "line": 6722,
+      "level": 2,
+      "title": "Ещё один практичный вариант для DSP-таблиц"
+    },
+    {
+      "line": 6750,
+      "level": 3,
+      "title": "Ошибка .style и jinja2"
+    },
+    {
+      "line": 6791,
+      "level": 2,
+      "title": "Решение"
+    },
+    {
+      "line": 6795,
+      "level": 3,
+      "title": "В Jupyter Notebook / JupyterLab"
+    },
+    {
+      "line": 6811,
+      "level": 2,
+      "title": "Проверка"
+    },
+    {
+      "line": 6822,
+      "level": 2,
+      "title": "После установки ваш код будет работать"
+    },
+    {
+      "line": 6832,
+      "level": 2,
+      "title": "Альтернатива без `.style`"
+    },
+    {
+      "line": 6850,
+      "level": 2,
+      "title": "Практическое замечание для DSP-таблиц"
+    },
+    {
+      "line": 6866,
+      "level": 2,
+      "title": "1. Проверьте, где запускается Python"
+    },
+    {
+      "line": 6877,
+      "level": 2,
+      "title": "2. Установите Jinja2 именно в это окружение"
+    },
+    {
+      "line": 6892,
+      "level": 2,
+      "title": "3. Проверка внутри kernel"
+    },
+    {
+      "line": 6904,
+      "level": 2,
+      "title": "4. Быстрая проверка `.style`"
+    },
+    {
+      "line": 6917,
+      "level": 2,
+      "title": "5. Если ошибка всё ещё есть"
+    },
+    {
+      "line": 6968,
+      "level": 1,
+      "title": "1. Проверить, видит ли kernel Jinja2"
+    },
+    {
+      "line": 6987,
+      "level": 1,
+      "title": "2. Установить Jinja2 именно в этот Python"
+    },
+    {
+      "line": 7006,
+      "level": 1,
+      "title": "3. Проверить снова"
+    },
+    {
+      "line": 7015,
+      "level": 1,
+      "title": "4. После этого код будет работать"
+    },
+    {
+      "line": 7027,
+      "level": 1,
+      "title": "5. Если установка запрещена (часто на Kaggle / учебных серверах)"
+    },
+    {
+      "line": 7069,
+      "level": 3,
+      "title": "Python Dictionary Example"
+    },
+    {
+      "line": 7076,
+      "level": 3,
+      "title": "Basic dictionary"
+    },
+    {
+      "line": 7078,
+      "level": 1,
+      "title": "Creating a dictionary"
+    },
+    {
+      "line": 7088,
+      "level": 3,
+      "title": "Accessing values"
+    },
+    {
+      "line": 7094,
+      "level": 3,
+      "title": "Adding / updating values"
+    },
+    {
+      "line": 7100,
+      "level": 3,
+      "title": "Removing values"
+    },
+    {
+      "line": 7106,
+      "level": 3,
+      "title": "Iterating over dictionary"
+    },
+    {
+      "line": 7112,
+      "level": 3,
+      "title": "Example with nested dictionary"
+    },
+    {
+      "line": 7153,
+      "level": 3,
+      "title": "Cause"
+    },
+    {
+      "line": 7168,
+      "level": 3,
+      "title": "Fix"
+    },
+    {
+      "line": 7183,
+      "level": 3,
+      "title": "Why your version fails"
+    },
+    {
+      "line": 7191,
+      "level": 3,
+      "title": "Additional check (important)"
+    },
+    {
+      "line": 7219,
+      "level": 3,
+      "title": "Summary"
+    },
+    {
+      "line": 7238,
+      "level": 3,
+      "title": "Basic syntax"
+    },
+    {
+      "line": 7249,
+      "level": 3,
+      "title": "Simple example"
+    },
+    {
+      "line": 7261,
+      "level": 3,
+      "title": "Important: not in-place"
+    },
+    {
+      "line": 7276,
+      "level": 3,
+      "title": "Appending multiple values"
+    },
+    {
+      "line": 7284,
+      "level": 3,
+      "title": "With 2D arrays"
+    },
+    {
+      "line": 7288,
+      "level": 1,
+      "title": "append as a new row"
+    },
+    {
+      "line": 7291,
+      "level": 1,
+      "title": "append as a new column"
+    },
+    {
+      "line": 7297,
+      "level": 3,
+      "title": "Common mistake (likely in your code)"
+    },
+    {
+      "line": 7313,
+      "level": 3,
+      "title": "Performance"
+    },
+    {
+      "line": 7323,
+      "level": 3,
+      "title": "1. Основной способ (рекомендуется)"
+    },
+    {
+      "line": 7339,
+      "level": 3,
+      "title": "2. Проверка отсутствия"
+    },
+    {
+      "line": 7347,
+      "level": 3,
+      "title": "3. Через `.get()` (если сразу нужно значение)"
+    },
+    {
+      "line": 7360,
+      "level": 3,
+      "title": "4. Без ошибки (вместо KeyError)"
+    },
+    {
+      "line": 7367,
+      "level": 3,
+      "title": "5. Неправильный способ (избегать)"
+    },
+    {
+      "line": 7374,
+      "level": 3,
+      "title": "Практика для твоего случая (DTMF)"
+    },
+    {
+      "line": 7384,
+      "level": 3,
+      "title": "Кратко"
+    },
+    {
+      "line": 7401,
+      "level": 3,
+      "title": "Синтаксис"
+    },
+    {
+      "line": 7412,
+      "level": 3,
+      "title": "Базовые примеры"
+    },
+    {
+      "line": 7418,
+      "level": 1,
+      "title": "[0 1 2 3 4]"
+    },
+    {
+      "line": 7423,
+      "level": 1,
+      "title": "[1 2 3 4 5]"
+    },
+    {
+      "line": 7428,
+      "level": 1,
+      "title": "[0 2 4 6 8]"
+    },
+    {
+      "line": 7433,
+      "level": 3,
+      "title": "С дробным шагом"
+    },
+    {
+      "line": 7436,
+      "level": 1,
+      "title": "[0.  0.2 0.4 0.6 0.8]"
+    },
+    {
+      "line": 7443,
+      "level": 3,
+      "title": "Частая ошибка"
+    },
+    {
+      "line": 7456,
+      "level": 3,
+      "title": "Использование в DSP (твой случай)"
+    },
+    {
+      "line": 7472,
+      "level": 3,
+      "title": "Пример синусоиды"
+    },
+    {
+      "line": 7480,
+      "level": 3,
+      "title": "Когда НЕ использовать `arange`"
+    },
+    {
+      "line": 7492,
+      "level": 2,
+      "title": "1. Using SciPy (`scipy.io.wavfile`)"
+    },
+    {
+      "line": 7503,
+      "level": 3,
+      "title": "Notes"
+    },
+    {
+      "line": 7507,
+      "level": 3,
+      "title": "Normalize to float (recommended for DSP)"
+    },
+    {
+      "line": 7516,
+      "level": 2,
+      "title": "2. Using SoundFile (`soundfile`) — more flexible"
+    },
+    {
+      "line": 7527,
+      "level": 3,
+      "title": "Force float32"
+    },
+    {
+      "line": 7534,
+      "level": 2,
+      "title": "3. Mono vs Stereo"
+    },
+    {
+      "line": 7545,
+      "level": 2,
+      "title": "4. Typical DSP workflow (relevant to your DTMF work)"
+    },
+    {
+      "line": 7553,
+      "level": 3,
+      "title": "Разделение массива по нулям"
+    },
+    {
+      "line": 7560,
+      "level": 3,
+      "title": "1. Базовый вариант (чистый Python)"
+    },
+    {
+      "line": 7594,
+      "level": 3,
+      "title": "2. Вариант с NumPy (если работаешь с массивами)"
+    },
+    {
+      "line": 7603,
+      "level": 1,
+      "title": "индексы нулей"
+    },
+    {
+      "line": 7606,
+      "level": 1,
+      "title": "разбиваем"
+    },
+    {
+      "line": 7609,
+      "level": 1,
+      "title": "убираем нули и пустые куски"
+    },
+    {
+      "line": 7617,
+      "level": 3,
+      "title": "3. Через `itertools.groupby` (более “питонично”)"
+    }
+  ]
+}
