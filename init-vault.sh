@@ -30,25 +30,27 @@ else
     echo "✓ vault.config.yaml created — EDIT domains list before running pipeline"
 fi
 
-# 2. Wiki directory structure
+# 2. Full vault directory structure
 mkdir -p "$VAULT_ROOT/wiki/Meta"
 mkdir -p "$VAULT_ROOT/wiki/templates"
 mkdir -p "$VAULT_ROOT/pipeline/tracking"
 mkdir -p "$VAULT_ROOT/pipeline/index"
 mkdir -p "$VAULT_ROOT/pipeline/reconstructed"
 mkdir -p "$VAULT_ROOT/pipeline/stage-output"
+mkdir -p "$VAULT_ROOT/pipeline/stage-output/errors"
 mkdir -p "$VAULT_ROOT/pipeline/prompts"
+mkdir -p "$VAULT_ROOT/pipeline/handoff/provenance"
+mkdir -p "$VAULT_ROOT/pipeline/errors"
 mkdir -p "$VAULT_ROOT/domains"
+mkdir -p "$VAULT_ROOT/docs"
 echo "✓ Directory structure created"
 
 # 3. Copy wiki templates
 cp "$ENGINE_DIR/templates/"*.md "$VAULT_ROOT/wiki/templates/" 2>/dev/null && \
     echo "✓ Wiki templates copied" || echo "  (no templates to copy)"
 
-# 4. Copy ontology + schema
-cp -r "$ENGINE_DIR/ontology/." "$VAULT_ROOT/ontology/" 2>/dev/null
-cp -r "$ENGINE_DIR/schema/." "$VAULT_ROOT/schema/" 2>/dev/null
-echo "✓ Ontology + schema copied"
+# 4. ontology + schema stay in engine (no copy needed)
+#    Scripts read them from ENGINE_DIR automatically
 
 # 5. Initialize empty tracking files
 if [ ! -f "$VAULT_ROOT/pipeline/tracking/progress.json" ]; then

@@ -11,7 +11,7 @@ Run the embedding script in incremental mode to index only new/changed pages:
 
 ```bash
 cd ~/vaults/Vladimir-llm-wiki
-bash pipeline/scripts/embed.sh --incremental
+bash engine/scripts/embed.sh  # or: ./llm-wiki sync --incremental
 ```
 
 This will:
