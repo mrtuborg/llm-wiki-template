@@ -18,10 +18,24 @@
    - Pages in `wiki/` not referenced in `wiki/index.md`
    - Add them to index if missing
 
-4. **Check sources-registry.md**:
-   - Find sources with status `ingested` but not `compiled` → re-trigger stage 7
-   - Find sources with status `compiled` but not `done` → re-trigger stage 9
-   - Report stalled pipeline entries
+4. **Check sources-registry.md** (use Python — grep with backticks is blocked):
+   ```bash
+   python3 - << 'PYEOF'
+   import re
+   data = open("pipeline/sources-registry.md", encoding="utf-8").read()
+   rows = re.findall(r'^\|([^|]+)\|([^|]+)\|([^|]+)\|', data, re.MULTILINE)
+   stalled = []
+   for source, path, status in rows:
+       s = status.strip().strip('`')
+       if s in ("ingested", "compiled"):
+           stalled.append((s, source.strip(), path.strip()))
+   for s, src, p in stalled:
+       print(f"{s}: {src} — {p}")
+   print(f"Total stalled: {len(stalled)}")
+   PYEOF
+   ```
+   - `ingested` but not `compiled` → re-trigger stage 7
+   - `compiled` but not `done` → re-trigger stage 9
 
 5. **Synthesis check**:
    - List domains with >10 pages but no synthesis page
