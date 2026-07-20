@@ -2,8 +2,19 @@
 
 {{SHARED_CONTEXT}}
 
+### Domain Classification Reference
+Before classifying any content, read these subdomain dictionaries:
+- `{{WIKI_ROOT}}/domains/Engineer/subdomains.md`
+- `{{WIKI_ROOT}}/domains/TechLead/subdomains.md`
+- `{{WIKI_ROOT}}/domains/Entrepreneur/subdomains.md`
+- `{{WIKI_ROOT}}/domains/Self-care/subdomains.md`
+- `{{WIKI_ROOT}}/domains/Family/subdomains.md`
+- `{{WIKI_ROOT}}/domains/Meta/subdomains.md`
+
+Use these to decide domain + subdomain for each fragment. When content doesn't fit any described subdomain, use `Unrecognized` — do NOT invent domain names.
+
 ### Input
-Read `~/vaults/Vladimir-llm-wiki/pipeline/stage-output/current-5-reconstruction.md`  
+Read `{{WIKI_ROOT}}/pipeline/stage-output/current-5-reconstruction.md`  
 This lists all reconstructed files ready for ingestion.
 
 ### Your Task: Write Typed Wiki Pages
