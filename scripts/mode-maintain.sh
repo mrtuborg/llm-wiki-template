@@ -47,6 +47,11 @@ echo ""
 echo "▶ Stage 6b: Link Enrichment (orphaned pages)..."
 "$SCRIPT_DIR/run-stage.sh" "6b-link-enrichment" "$BATCH_ID"
 
+# Stage 6c: Deduplication
+echo ""
+echo "▶ Stage 6c: Deduplication..."
+"$SCRIPT_DIR/run-stage.sh" "6c-dedup" "$BATCH_ID"
+
 # Optional synthesis
 if [ "$WITH_SYNTHESIS" = "true" ]; then
     echo ""
