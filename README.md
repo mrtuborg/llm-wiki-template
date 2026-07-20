@@ -190,6 +190,39 @@ The pipeline is split into three phases. **Setup** (Layers 1–4) runs once on i
 
 Layers 1–4 are run by the human (or manually via `./llm-wiki stage`). Layers 5–9 are run automatically on every `./llm-wiki add` or `./llm-wiki maintain --synthesis` call.
 
+## Testing the Pipeline
+
+Before running a full ingestion, validate the current state without invoking any LLM:
+
+```bash
+# Check domain integrity, frontmatter, subdomains
+./llm-wiki validate
+
+# Check dead links, missing fields, structural issues
+bash engine/tools/validate/check-dead-links.sh
+
+# Check ontology consistency
+python3 engine/tools/validate/check-ontology.py
+
+# Show what's pending, queued, stalled
+./llm-wiki status
+./llm-wiki sources
+```
+
+To test the LLM pipeline on a minimal batch:
+
+```bash
+# Process exactly 1 file — inspect output before going further
+./llm-wiki add --batch-size 1 --once
+
+# Run one stage manually (no auto-loop)
+./llm-wiki stage add-scan         # scan sources only
+./llm-wiki stage 5-reconstruction # reconstruction only
+./llm-wiki stage 6-ingestion      # ingestion only
+```
+
+Stage output and errors are logged to `pipeline/stage-output/`.
+
 ## Attaching to an existing vault
 
 If your vault is NOT a git repo, use a symlink:
