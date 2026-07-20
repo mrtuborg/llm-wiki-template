@@ -84,6 +84,11 @@ while true; do
     echo "▶ Stage 6: Ingestion..."
     "$SCRIPT_DIR/run-stage.sh" "6-ingestion" "$BATCH_ID" "$BATCH_SIZE"
 
+    # Stage 6b: Link Enrichment
+    echo ""
+    echo "▶ Stage 6b: Link Enrichment..."
+    "$SCRIPT_DIR/run-stage.sh" "6b-link-enrichment" "$BATCH_ID" "$BATCH_SIZE"
+
     # Stage 7: Compilation
     echo ""
     echo "▶ Stage 7: Compilation..."
