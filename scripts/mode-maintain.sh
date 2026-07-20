@@ -52,9 +52,24 @@ fi
 echo ""
 echo "▶ Checking for stalled sources..."
 stalled_compiled=$(tracker_count compiled)
-if [[ $stalled_compiled -gt 0 ]]; then
+if [ "$stalled_compiled" -gt 0 ]; then
     echo "  Found $stalled_compiled sources stuck at 'compiled' — running Stage 9..."
     "$SCRIPT_DIR/run-stage.sh" "9-decision-log" "$BATCH_ID"
+    # Mark all compiled sources as done (they have been through stages 5-7 successfully)
+    echo "  Marking $stalled_compiled compiled sources as done..."
+    python3 - "$PROGRESS_FILE" << 'PYEOF_INNER'
+import json, sys
+path = sys.argv[1]
+d = json.load(open(path))
+changed = 0
+for key, val in d["sources"].items():
+    if val.get("status") == "compiled":
+        val["status"] = "done"
+        changed += 1
+json.dump(d, open(path, "w"), indent=2)
+print(f"  Marked {changed} compiled → done")
+PYEOF_INNER
+    tracker_update_stats
 fi
 
 tracker_update_stats
