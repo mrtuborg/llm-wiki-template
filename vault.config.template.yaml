@@ -33,9 +33,8 @@ agent:
   # Use 'auto' to let Copilot pick, or set per-stage overrides below
   model: auto
   stage_models:
-    # Override model per stage (optional — falls back to agent.model)
-    # 5-reconstruction: gpt-5-mini      # cheap stage, simple extraction
-    # 6-ingestion: claude-sonnet-4.6    # main stage, needs quality
-    # 7-compilation: gpt-5-mini         # mechanical index update
-    # 8-synthesis: claude-sonnet-4.6    # reasoning-heavy
-    # 9-decision-log: gpt-5-mini        # simple capture
+    5-reconstruction: gpt-5-mini      # fast structural extraction
+    6-ingestion: claude-sonnet-4.6    # main stage — needs quality + context
+    7-compilation: gpt-5-mini         # mechanical index update
+    8-synthesis: claude-sonnet-4.6    # reasoning-heavy, pattern finding
+    9-decision-log: gpt-5-mini        # simple structured capture
