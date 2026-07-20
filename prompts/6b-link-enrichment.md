@@ -66,8 +66,9 @@ Process up to **30 pages** per run.
 - Maximum 5 new links per page — quality over quantity
 - Use exact slug `[[page-slug]]` (filename without .md), not full path
 
-**Step 5: Write stage output** to `{{WIKI_ROOT}}/pipeline/stage-output/current-6b-link-enrichment.md`:
-```markdown
+**Step 5: Write stage output** — **overwrite** (not create) `{{WIKI_ROOT}}/pipeline/stage-output/current-6b-link-enrichment.md`:
+```bash
+cat > "{{WIKI_ROOT}}/pipeline/stage-output/current-6b-link-enrichment.md" << 'STAGE_OUT'
 # Stage 6b Output — {{TIMESTAMP}}
 ## Pages enriched: N
 | Page | Links added | Linked to |
@@ -77,4 +78,5 @@ Process up to **30 pages** per run.
 
 ## Still orphaned: M
 (list pages that couldn't find good matches — need human review or more content)
+STAGE_OUT
 ```

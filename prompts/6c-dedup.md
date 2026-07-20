@@ -1,5 +1,8 @@
 ## Pipeline Stage 6c: Deduplication
 
+> **File rule:** Stage output files (`pipeline/stage-output/current-*.md`) already exist — always **overwrite** them, never try to create.
+
+
 {{SHARED_CONTEXT}}
 
 ### Goal
