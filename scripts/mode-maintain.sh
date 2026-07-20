@@ -42,7 +42,13 @@ echo "▶ Stage 7: Health Check + Compilation..."
 "$SCRIPT_DIR/run-stage.sh" "maintain-health" "$BATCH_ID"
 
 # Optional synthesis
-if [[ "$WITH_SYNTHESIS" == true ]]; then
+# Stage 6b: Link Enrichment (always — reduces orphaned pages)
+echo ""
+echo "▶ Stage 6b: Link Enrichment (orphaned pages)..."
+"$SCRIPT_DIR/run-stage.sh" "6b-link-enrichment" "$BATCH_ID"
+
+# Optional synthesis
+if [ "$WITH_SYNTHESIS" = "true" ]; then
     echo ""
     echo "▶ Stage 8: Synthesis..."
     "$SCRIPT_DIR/run-stage.sh" "8-synthesis" "$BATCH_ID"
