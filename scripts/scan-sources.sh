@@ -12,11 +12,14 @@ SOURCES_JSON="$WIKI_ROOT/pipeline/tracking/sources.json"
 PROGRESS_JSON="$WIKI_ROOT/pipeline/tracking/progress.json"
 QUEUE_JSON="$WIKI_ROOT/pipeline/tracking/queue.json"
 STAGE_OUT="$WIKI_ROOT/pipeline/stage-output/current-add-scan.md"
+STAGE5_OUT="$WIKI_ROOT/pipeline/stage-output/current-5-reconstruction.md"
 
-python3 - "$WIKI_ROOT" "$SOURCES_JSON" "$PROGRESS_JSON" "$QUEUE_JSON" "$STAGE_OUT" "$BATCH_ID" "$BATCH_SIZE" << 'PYEOF'
+mkdir -p "$WIKI_ROOT/pipeline/stage-output"
+
+python3 - "$WIKI_ROOT" "$SOURCES_JSON" "$PROGRESS_JSON" "$QUEUE_JSON" "$STAGE_OUT" "$STAGE5_OUT" "$BATCH_ID" "$BATCH_SIZE" << 'PYEOF'
 import json, os, sys, glob
 
-wiki_root, sources_f, progress_f, queue_f, stage_out, batch_id, batch_size = sys.argv[1:]
+wiki_root, sources_f, progress_f, queue_f, stage_out, stage5_out, batch_id, batch_size = sys.argv[1:]
 batch_size = int(batch_size)
 
 sources = json.load(open(sources_f)).get("sources", [])
@@ -83,6 +86,16 @@ with open(stage_out, "w") as fh:
     fh.write(f"- Total queued: {total_queued}\n")
     fh.write(f"- Total pending: {pending}\n\n")
     fh.write("## Batch files\n")
+    for p in batch_paths:
+        fh.write(f"- {p}\n")
+
+# Write current-5-reconstruction.md (stage 5 reads this to know which files to process)
+with open(stage5_out, "w") as fh:
+    fh.write(f"# Scan Results — {batch_id}\n")
+    fh.write(f"- Batch ID: {batch_id}\n")
+    fh.write(f"- Files queued this scan: {total_queued}\n")
+    fh.write(f"- Total still pending: {pending}\n\n")
+    fh.write(f"## Files in this batch (for Stage 5)\n")
     for p in batch_paths:
         fh.write(f"- {p}\n")
 
