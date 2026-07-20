@@ -18,12 +18,14 @@ source "$SCRIPT_DIR/lib/context-builder.sh"
 BATCH_SIZE=3
 MAX_LOOPS=999
 ONCE=false
+DISCOVER_DOMAINS=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --batch-size) BATCH_SIZE="$2"; shift ;;
-        --max-loops)  MAX_LOOPS="$2";  shift ;;
-        --once)       ONCE=true ;;
+        --batch-size)       BATCH_SIZE="$2"; shift ;;
+        --max-loops)        MAX_LOOPS="$2";  shift ;;
+        --once)             ONCE=true ;;
+        --discover-domains) DISCOVER_DOMAINS=true ;;
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
     shift
@@ -31,22 +33,35 @@ done
 
 tracker_init
 
-# Auto-discover domains if vault is unconfigured (still has placeholder domains)
-if python3 -c "
+# Guard: exit if domains are unconfigured (placeholders)
+_domains_ok=$(python3 -c "
 import sys
 try:
-    import yaml
-    c = yaml.safe_load(open('$WIKI_ROOT/vault.config.yaml'))
-    domains = c.get('wiki',{}).get('domains', c.get('domains', []))
-    placeholders = [d for d in domains if d in ('Domain1','Domain2')]
-    sys.exit(0 if placeholders else 1)
-except: sys.exit(0)
-" 2>/dev/null; then
-    echo ""
-    echo "⚠️  Domains not configured (Domain1/Domain2 placeholders detected)"
-    echo "▶ Auto-discovering domains from source content..."
-    bash "$SCRIPT_DIR/discover-domains.sh" --apply
-    echo ""
+    import re
+    config = open('$WIKI_ROOT/vault.config.yaml').read()
+    placeholders = re.findall(r'- Domain[12]', config)
+    sys.exit(1 if placeholders else 0)
+except: sys.exit(1)
+" 2>/dev/null; echo $?)
+
+if [ "$_domains_ok" != "0" ]; then
+    if [ "$DISCOVER_DOMAINS" = "true" ]; then
+        echo ""
+        echo "⚠️  Domains not configured — running discovery..."
+        bash "$SCRIPT_DIR/discover-domains.sh" --apply
+        echo ""
+    else
+        echo ""
+        echo "❌ Domains not configured in vault.config.yaml"
+        echo "   vault.config.yaml still contains placeholder domains (Domain1, Domain2)."
+        echo ""
+        echo "   Options:"
+        echo "     Auto-discover from content:  ./llm-wiki add --discover-domains"
+        echo "     Set manually:                edit vault.config.yaml → domains list"
+        echo "                                  then: WIKI_ROOT=\$(pwd) bash engine/scripts/discover-domains.sh --apply"
+        echo ""
+        exit 1
+    fi
 fi
 
 # Always scan sources first to discover untracked files
