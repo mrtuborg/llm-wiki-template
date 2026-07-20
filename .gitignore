@@ -1,26 +1,33 @@
-# Generated pipeline artifacts (per-run outputs)
-wiki/updates/
-wiki/compiled/
-wiki/graph/
-wiki/synthesis/
-wiki/decisions/
+# Vault data (never commit)
+pipeline/tracking/
+pipeline/index/
+pipeline/stage-output/
 pipeline/reconstructed/
+pipeline/errors/
+pipeline/handoff/
 
-# Per-instance config (set when instantiating from template)
-pipeline/config.md
+# Reconstruction artifacts
+**/reconstruction_artifacts/
+**/*_artifacts/
 
-# Obsidian workspace state
-.obsidian/workspace.json
-.obsidian/workspace-mobile.json
+# Python
+__pycache__/
+*.pyc
+*.pyo
 
-# Third-party plugins (not tracked — installed by user)
-# Use wildcard so we can negate our own plugin below
-.obsidian/plugins/*/
-# Track our plugin (negate works when parent is not itself ignored)
-!.obsidian/plugins/llm-wiki-semantic-graph/
-
-# OS
+# macOS
 .DS_Store
-Thumbs.db
 
-# Keep graph.json and app.json (they are template config)
+# Obsidian
+.obsidian/workspace*
+.obsidian/cache
+
+# Embeddings DB
+*.db
+*.db-shm
+*.db-wal
+
+# Temp files
+/tmp/
+*.tmp
+*.bak
