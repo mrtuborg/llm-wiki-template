@@ -390,3 +390,14 @@
   color: var(--text-faint);
   font-style: italic;
 }
+
+/* Embedding generator UI */
+.llm-sem-gen-row { display: flex; flex-direction: column; gap: 4px; margin: 6px 0; }
+.llm-sem-gen-input {
+  font-size: 10px; padding: 3px 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px; background: var(--background-primary);
+  color: var(--text-normal); width: 100%; box-sizing: border-box;
+}
+.llm-sem-gen-btn { margin-top: 4px; font-size: 11px; padding: 4px 10px; cursor: pointer; }
+.llm-sem-gen-progress { font-size: 10px; color: var(--text-muted); min-height: 14px; }
