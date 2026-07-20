@@ -7,7 +7,7 @@ import os, re, glob, json
 from collections import Counter, defaultdict
 from datetime import datetime
 
-WIKI_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+WIKI_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 GRAPH_DIR = os.path.join(WIKI_ROOT, "wiki/graph")
 
 graph_files = sorted(glob.glob(GRAPH_DIR + "/*-graph.md"))

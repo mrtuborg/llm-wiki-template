@@ -7,7 +7,10 @@
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WIKI_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-export WIKI_ROOT
+ENGINE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+export ENGINE_DIR
+export WIKI_ROOT ENGINE_DIR
+source "$SCRIPT_DIR/lib/vault-config.sh" 2>/dev/null || true
 PYTHON=/opt/homebrew/bin/python3.12
 
 if [[ ! -x "$PYTHON" ]]; then

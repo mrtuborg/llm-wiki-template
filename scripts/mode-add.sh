@@ -8,6 +8,9 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WIKI_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 export WIKI_ROOT
 
+ENGINE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+export ENGINE_DIR
+source "$SCRIPT_DIR/lib/vault-config.sh"
 source "$SCRIPT_DIR/lib/tracker.sh"
 source "$SCRIPT_DIR/lib/context-builder.sh"
 
@@ -30,7 +33,7 @@ tracker_init
 
 # Always scan sources first to discover untracked files
 echo "  Scanning sources for new files..."
-tracker_scan_sources "$HOME/vaults/Vladimir"
+tracker_scan_all_sources
 echo ""
 
 echo ""
@@ -92,7 +95,7 @@ while true; do
     bash "$SCRIPT_DIR/embed.sh" --incremental
 
     # Stage 8: Synthesis (conditional — only if ≥5 new pages)
-    stage7_out="$WIKI_ROOT/pipeline/stage-output/current-7-compilation.md"
+    stage7_out="${STAGE_OUTPUT_DIR:-$WIKI_ROOT/pipeline/stage-output}/current-7-compilation.md"
     if [[ -f "$stage7_out" ]] && grep -q "Synthesis threshold.*YES" "$stage7_out" 2>/dev/null; then
         echo ""
         echo "▶ Stage 8: Synthesis (threshold met)..."

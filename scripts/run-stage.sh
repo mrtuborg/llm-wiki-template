@@ -12,6 +12,9 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WIKI_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 export WIKI_ROOT
 
+ENGINE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+export ENGINE_DIR
+source "$SCRIPT_DIR/lib/vault-config.sh"
 source "$SCRIPT_DIR/lib/tracker.sh"
 source "$SCRIPT_DIR/lib/context-builder.sh"
 
@@ -19,7 +22,7 @@ STAGE="${1:?Usage: run-stage.sh <stage-name> [batch_id] [batch_size]}"
 BATCH_ID="${2:-batch-$(date -u +%Y%m%dT%H%M%SZ)}"
 BATCH_SIZE="${3:-3}"
 
-SOURCES_DIR="$HOME/vaults/Vladimir"
+# SOURCES_DIR resolved from active sources in vault (see orchestrator source add)
 
 echo ""
 echo "┌─────────────────────────────────────────────────────┐"
@@ -50,14 +53,14 @@ if [[ $EXIT_CODE -eq 0 ]]; then
     echo "[run-stage] ✅ Stage $STAGE completed"
 else
     echo "[run-stage] ❌ Stage $STAGE failed (exit $EXIT_CODE)"
-    mkdir -p "$WIKI_ROOT/pipeline/errors"
+    mkdir -p "${STAGE_OUTPUT_DIR:-$WIKI_ROOT/pipeline/stage-output}/errors"
     {
         echo "# Stage Error — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
         echo "- Stage: $STAGE"
         echo "- Batch: $BATCH_ID"
         echo "- Exit code: $EXIT_CODE"
         echo "- Prompt: $prompt_file"
-    } >> "$WIKI_ROOT/pipeline/errors/$(date -u +%Y%m%dT%H%M%SZ)-${STAGE}.md"
+    } >> "${STAGE_OUTPUT_DIR:-$WIKI_ROOT/pipeline/stage-output}/errors/$(date -u +%Y%m%dT%H%M%SZ)-${STAGE}.md"
     exit $EXIT_CODE
 fi
 
@@ -67,7 +70,7 @@ tracker_update_stats
 # ─── Post-stage: hash tracking ──────────────────────────────────────────────
 # Stage 9 (final stage) marks processed source files as done.
 # Reads "processed_files:" list from the stage-output manifest.
-STAGE_OUT="$WIKI_ROOT/pipeline/stage-output/current-${STAGE}.md"
+STAGE_OUT="${STAGE_OUTPUT_DIR:-$WIKI_ROOT/pipeline/stage-output}/current-${STAGE}.md"
 if [[ "$STAGE" == "9-decision-log" && -f "$STAGE_OUT" ]]; then
     echo "[run-stage] Storing content hashes for processed source files..."
     hashed=0

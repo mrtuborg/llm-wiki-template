@@ -231,10 +231,32 @@ tracker_sync_from_registry() {
     echo "[tracker] Synced $count entries from registry"
 }
 
+
+# Scan all active sources from sources.json
+tracker_scan_all_sources() {
+    local sources_file="${TRACKING_DIR:-$WIKI_ROOT/pipeline/tracking}/sources.json"
+    if [ ! -f "$sources_file" ]; then
+        echo "⚠️  No sources.json found. Add a source with: ./llm-wiki source add /path/to/raw"
+        return 0
+    fi
+    local paths
+    paths=$(python3 -c "
+import json, sys
+data = json.load(open(sys.argv[1]))
+for s in data.get('sources', []):
+    if s.get('status') == 'active' and s.get('path'):
+        print(s['path'])
+" "$sources_file")
+    while IFS= read -r src_path; do
+        [ -n "$src_path" ] || continue
+        tracker_scan_sources "$src_path"
+    done <<< "$paths"
+}
+
 # Scan ~/vaults/Vladimir for all source files and add missing ones as "pending"
 # Respects exclusion patterns from pipeline.yaml
 tracker_scan_sources() {
-    local sources_dir="${1:-$HOME/vaults/Vladimir}"
+    local sources_dir="${1:-}"
     echo "[tracker] Scanning sources: $sources_dir"
 
     # Excluded directory name fragments (from pipeline.yaml)

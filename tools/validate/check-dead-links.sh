@@ -64,7 +64,7 @@ empty  = []   # slug exists but file has no body
 for f in sorted(glob.glob(WIKI + "/**/*.md", recursive=True)):
     if any(f.startswith(ex) for ex in EXCLUDE_DIRS):
         continue
-    rel = f.replace(os.path.expanduser("~/vaults/Vladimir-llm-wiki/"), "")
+    rel = f.replace(WIKI.rstrip("/") + "/", "").replace(WIKI + "/", "")
     content = open(f).read()
     for m in wikilink_re.finditer(content):
         target = m.group(1).strip()
@@ -105,7 +105,7 @@ dupe = []
 for f in sorted(glob.glob(WIKI + "/**/*.md", recursive=True)):
     if any(f.startswith(ex) for ex in EXCLUDE_DIRS):
         continue
-    rel = f.replace(os.path.expanduser("~/vaults/Vladimir-llm-wiki/"), "")
+    rel = f.replace(WIKI.rstrip("/") + "/", "").replace(WIKI + "/", "")
     content = open(f).read()
     body = re.sub(r'^---\n.*?\n---\n', '', content, count=1, flags=re.DOTALL)
     if duplication_re.search(body):
@@ -130,7 +130,7 @@ for f in sorted(glob.glob(WIKI + "/**/*.md", recursive=True)):
     # Skip index files
     if os.path.basename(f) == "index.md":
         continue
-    rel = f.replace(os.path.expanduser("~/vaults/Vladimir-llm-wiki/"), "")
+    rel = f.replace(WIKI.rstrip("/") + "/", "").replace(WIKI + "/", "")
     content = open(f, encoding="utf-8", errors="replace").read()
     m = fm_re.match(content)
     if not m:

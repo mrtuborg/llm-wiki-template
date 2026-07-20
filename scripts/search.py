@@ -45,7 +45,7 @@ def embed(text: str, model: str) -> list:
 def open_db(path: Path) -> sqlite3.Connection:
     if not path.exists():
         print(f"❌  Index not found: {path}")
-        print("    Run first:  bash pipeline/scripts/embed.sh")
+        print("    Run first:  ./llm-wiki sync  (or engine/scripts/embed.sh)")
         sys.exit(1)
     db = sqlite3.connect(str(path))
     db.enable_load_extension(True)

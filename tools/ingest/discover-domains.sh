@@ -1,60 +1,53 @@
-#!/bin/bash
-# discover-domains.sh
-# Shows current domain/subdomain structure and Unrecognized counts.
-# Domains are FIXED (Engineer/TechLead/Entrepreneur/Self-care/Family/Meta).
-# Use this to review what's in Unrecognized/ and plan subdomain assignments.
-#
-# Usage:
-#   ./tools/ingest/discover-domains.sh           # show structure + Unrecognized
-#   ./tools/ingest/discover-domains.sh --unrecognized  # show only unrecognized pages
-
-set -euo pipefail
+#!/usr/bin/env bash
+# discover-domains.sh — show current domain/subdomain structure
+# Part of llm-wiki-engine. Reads vault.config.yaml for domain list.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WIKI_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-WIKI="$WIKI_ROOT/wiki"
+ENGINE_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+WIKI_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+export WIKI_ROOT ENGINE_DIR
 
-DOMAINS=("Engineer" "TechLead" "Entrepreneur" "Self-care" "Family" "Meta")
+source "$ENGINE_DIR/scripts/lib/vault-config.sh" 2>/dev/null || true
 
-echo "=== Wiki Domain Structure ==="
-echo "Config: $WIKI_ROOT/pipeline/config/pipeline.yaml"
+WIKI="${WIKI_DIR:-$WIKI_ROOT/wiki}"
+
+echo ""
+echo " Domain Structure"
+echo " ────────────────────────────────────────────────"
+echo " Vault: $WIKI_ROOT"
 echo ""
 
-for domain in "${DOMAINS[@]}"; do
+total_pages=0
+unrecognized_total=0
+
+for domain in "${VALID_DOMAINS[@]:-Engineer TechLead Entrepreneur Self-care Family Meta}"; do
     domain_dir="$WIKI/$domain"
-    [[ -d "$domain_dir" ]] || continue
-    total=$(find "$domain_dir" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-    printf "%-16s  %3d pages\n" "$domain" "$total"
+    [ -d "$domain_dir" ] || continue
+
+    domain_count=$(find "$domain_dir" -name "*.md" ! -path "*/Unrecognized/*" | wc -l | tr -d ' ')
+    unrecognized=$(find "$domain_dir/Unrecognized" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+    total_pages=$((total_pages + domain_count + unrecognized))
+    unrecognized_total=$((unrecognized_total + unrecognized))
+
+    echo " 📂 $domain ($domain_count pages${unrecognized:+, ⚠️ $unrecognized unrecognized})"
+
     # List subdomains
-    for sub in "$domain_dir"/*/; do
-        [[ -d "$sub" ]] || continue
-        subname=$(basename "$sub")
-        subcount=$(find "$sub" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-        if [[ "$subname" == "Unrecognized" ]]; then
-            printf "    ⚠️  %-20s  %3d pages  ← needs review\n" "$subname" "$subcount"
+    for subdir in "$domain_dir"/*/; do
+        [ -d "$subdir" ] || continue
+        subname="$(basename "$subdir")"
+        count=$(find "$subdir" -name "*.md" | wc -l | tr -d ' ')
+        if [ "$subname" = "Unrecognized" ]; then
+            [ "$count" -gt 0 ] && echo "   └─ ⚠️  Unrecognized ($count pages — needs review)"
         else
-            printf "    %-22s  %3d pages\n" "$subname" "$subcount"
+            echo "   └─ $subname ($count)"
         fi
     done
     echo ""
 done
 
-# Summary of Unrecognized
-unrecognized_total=0
-for domain in "${DOMAINS[@]}"; do
-    undir="$WIKI/$domain/Unrecognized"
-    [[ -d "$undir" ]] || continue
-    count=$(find "$undir" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-    unrecognized_total=$((unrecognized_total + count))
-done
-
-if [[ $unrecognized_total -gt 0 ]]; then
-    echo "⚠️  $unrecognized_total pages in Unrecognized — run orchestrator.sh unrecognized"
-else
-    echo "✅ No Unrecognized pages"
+echo " Total: $total_pages pages"
+if [ "$unrecognized_total" -gt 0 ]; then
+    echo " ⚠️  $unrecognized_total pages need domain assignment"
+    echo "    Run: $WIKI_ROOT/llm-wiki unrecognized"
 fi
-
-if [[ "${1:-}" == "--unrecognized" ]]; then
-    echo ""
-    exec bash "$WIKI_ROOT/pipeline/scripts/orchestrator.sh" unrecognized
-fi
+echo ""

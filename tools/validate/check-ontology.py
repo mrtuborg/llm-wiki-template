@@ -7,7 +7,8 @@ Exit code 0 = PASS. Exit code 1 = violations found.
 import os, re, glob, sys, json
 from collections import defaultdict
 
-WIKI_ROOT = os.path.expanduser("~/vaults/Vladimir-llm-wiki")
+WIKI_ROOT = os.environ.get("WIKI_ROOT",
+          os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 WIKI      = os.path.join(WIKI_ROOT, "wiki")
 EXCLUDE   = {"templates", "graph", "compiled", "updates"}
 

@@ -77,8 +77,8 @@ check_prerequisites() {
         ok=false
     fi
 
-    if [[ ! -d "$HOME/vaults/Vladimir" ]]; then
-        echo "❌ Sources vault not found: ~/vaults/Vladimir"
+    if [[ ${#ACTIVE_SOURCES[@]:-0} -eq 0 && ! -f "$TRACKING_DIR/sources.json" ]]; then
+        echo "❌ No sources configured. Run: ./llm-wiki source add /path/to/raw"
         ok=false
     fi
 
@@ -349,7 +349,7 @@ else:
     scan)
         print_banner "SCAN — Discover all source files"
         tracker_init
-        tracker_scan_sources "$HOME/vaults/Vladimir"
+        tracker_scan_all_sources
         tracker_summary
         ;;
 
