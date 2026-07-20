@@ -2,11 +2,12 @@
 """update-graph.py — Regenerate compiled graph.md from wiki pages.
 
 Sources of edges (combined):
-1. Latest compiled graph.md (existing semantic edges)
+1. Latest compiled graph.md (existing semantic edges, normalized)
 2. ## See also [[wikilinks]] sections in wiki pages
-3. Individual ## Edge List sections in wiki pages
-4. Auto-generated: top-3 tag-overlap matches per page (≥2 shared tags)
-   + subdomain fallback for pages with no tag edges
+3. Auto-generated: top-3 tag-overlap matches per page (≥2 shared tags)
+   + subdomain fallback + domain anchor fallback
+
+Edge label column MUST use only the closed allowed_edge_types set.
 """
 import os, re, glob
 from collections import defaultdict
@@ -22,10 +23,38 @@ wikilink_re = re.compile(r'\[\[([^\]|#]+?)(?:[|#][^\]]*)?\]\]')
 edge_table_re = re.compile(
     r'^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|$')
 
+# Closed set — only these labels allowed in edge col4
+ALLOWED_LABELS = {
+    "relates-to", "defines", "constrains", "participates-in",
+    "instance-of", "depends-on", "follows", "summarizes", "part-of", "specializes"
+}
+
+# Normalize legacy / misspelled labels to canonical
+LABEL_NORMALIZE = {
+    "relates_to": "relates-to",
+    "participates_in": "participates-in",
+    "instance_of": "instance-of",
+    "depends_on": "depends-on",
+    "summarized_into": "summarizes",
+    "summarized_in": "summarizes",
+    "integrated_into": "summarizes",
+    "generalized_into": "summarizes",
+    "abstracted_into": "summarizes",
+    "governs": "constrains",
+    "specializes": "specializes",
+    "subdomain": "relates-to",
+    "domain-member": "part-of",
+}
+
+def normalize_label(label: str) -> str:
+    label = label.strip().lower()
+    label = LABEL_NORMALIZE.get(label, label)
+    return label if label in ALLOWED_LABELS else "relates-to"
+
 edges = []
 seen_edges = set()
 
-# 1. Existing compiled graph edges
+# 1. Existing compiled graph edges (normalize labels)
 graph_files = sorted(glob.glob(GRAPH_DIR + "/*-graph.md"))
 if graph_files:
     text = open(graph_files[-1]).read()
@@ -42,7 +71,7 @@ if graph_files:
         if src in ("Source", "---"): continue
         key = (src, tgt)
         if key not in seen_edges:
-            edges.append((src, etype, tgt, label))
+            edges.append((src, etype, tgt, normalize_label(label)))
             seen_edges.add(key)
     print(f"  Existing edges: {len(edges)}")
 
@@ -105,10 +134,10 @@ for i, a in enumerate(slugs):
     per_page_best[a] = [(b, lbl) for _, b, lbl in scores[:3]]
 
 for a, targets in per_page_best.items():
-    for b, label in targets:
+    for b, _tag in targets:  # _tag is discarded — use fixed label
         key = tuple(sorted([a, b]))
         if key not in seen_edges:
-            edges.append((key[0], "Concept→Concept", key[1], label))
+            edges.append((key[0], "Concept→Concept", key[1], "relates-to"))
             seen_edges.add(key)
             auto_added += 1
 
@@ -127,7 +156,7 @@ for a in slugs:
         if pages_meta[b]["subdomain"] == pa["subdomain"] and b in connected:
             key = tuple(sorted([a, b]))
             if key not in seen_edges:
-                edges.append((key[0], "Concept→Concept", key[1], "subdomain"))
+                edges.append((key[0], "Concept→Concept", key[1], "relates-to"))
                 seen_edges.add(key)
                 subdomain_fallback += 1
             connected.add(a)
@@ -169,7 +198,7 @@ for f in glob.glob(WIKI_DIR + "/**/*.md", recursive=True):
 
     key = tuple(sorted([slug, anchor]))
     if key not in seen_edges:
-        edges.append((key[0], "Overview→Concept", key[1], "domain-member"))
+        edges.append((key[0], "Overview→Concept", key[1], "part-of"))
         seen_edges.add(key)
         connected.add(slug)
         domain_anchor_added += 1

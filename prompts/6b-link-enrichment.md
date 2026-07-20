@@ -1,5 +1,8 @@
 ## Pipeline Stage 6b: Link Enrichment
 
+> **Edge type rule:** Use ONLY: `relates-to` · `defines` · `constrains` · `participates-in` · `instance-of` · `depends-on` · `follows` · `summarizes` · `part-of` · `specializes` — never invent new types.
+
+
 {{SHARED_CONTEXT}}
 
 ### Goal
