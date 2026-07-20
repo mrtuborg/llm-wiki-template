@@ -42,7 +42,7 @@ try:
     config = open('$WIKI_ROOT/vault.config.yaml').read()
     placeholders = re.findall(r'- Domain[12]', config)
     sys.exit(1 if placeholders else 0)
-except: sys.exit(1)
+except Exception: sys.exit(1)
 " 2>/dev/null; echo $?)
 
 if [ "$_domains_ok" != "0" ]; then
