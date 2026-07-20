@@ -31,6 +31,24 @@ done
 
 tracker_init
 
+# Auto-discover domains if vault is unconfigured (still has placeholder domains)
+if python3 -c "
+import sys
+try:
+    import yaml
+    c = yaml.safe_load(open('$WIKI_ROOT/vault.config.yaml'))
+    domains = c.get('wiki',{}).get('domains', c.get('domains', []))
+    placeholders = [d for d in domains if d in ('Domain1','Domain2')]
+    sys.exit(0 if placeholders else 1)
+except: sys.exit(0)
+" 2>/dev/null; then
+    echo ""
+    echo "⚠️  Domains not configured (Domain1/Domain2 placeholders detected)"
+    echo "▶ Auto-discovering domains from source content..."
+    bash "$SCRIPT_DIR/discover-domains.sh" --apply
+    echo ""
+fi
+
 # Always scan sources first to discover untracked files
 echo "  Scanning sources for new files..."
 tracker_scan_all_sources
