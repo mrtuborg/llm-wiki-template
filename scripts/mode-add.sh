@@ -26,6 +26,7 @@ while [[ $# -gt 0 ]]; do
         --max-loops)        MAX_LOOPS="$2";  shift ;;
         --once)             ONCE=true ;;
         --discover-domains) DISCOVER_DOMAINS=true ;;
+        --apply)            ;; # ignored here (discover-domains always applies when used with add)
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
     shift
