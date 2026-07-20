@@ -5,8 +5,11 @@ Sources of edges (combined):
 1. Latest compiled graph.md (existing semantic edges)
 2. ## See also [[wikilinks]] sections in wiki pages
 3. Individual ## Edge List sections in wiki pages
+4. Auto-generated: top-3 tag-overlap matches per page (≥2 shared tags)
+   + subdomain fallback for pages with no tag edges
 """
 import os, re, glob
+from collections import defaultdict
 from datetime import datetime, timezone
 
 WIKI_ROOT = os.environ.get("WIKI_ROOT",
@@ -65,7 +68,75 @@ for f in sorted(glob.glob(WIKI_DIR + "/**/*.md", recursive=True)):
 
 print(f"  New from See also: {seealso_added}")
 
-# 3. Write new compiled graph.md
+# 3. Auto-generate edges from tag overlap + subdomain fallback
+# Read all page metadata
+pages_meta = {}
+for f in glob.glob(WIKI_DIR + "/**/*.md", recursive=True):
+    rel = f.replace(WIKI_DIR + "/", "")
+    if rel.split("/")[0] in SKIP_DIRS: continue
+    if os.path.basename(f) == "index.md": continue
+    slug = os.path.splitext(os.path.basename(f))[0]
+    content = open(f, encoding="utf-8", errors="replace").read()
+    fm = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
+    tags, subdomain = set(), ""
+    if fm:
+        fmtext = fm.group(1)
+        m = re.search(r'tags:\s*\[([^\]]+)\]', fmtext)
+        if m: tags = {t.strip().strip('"\'') for t in m.group(1).split(",")}
+        m = re.search(r'subdomain:\s*(.+)', fmtext)
+        if m: subdomain = m.group(1).strip()
+    pages_meta[slug] = {"tags": tags, "subdomain": subdomain}
+
+slugs = list(pages_meta.keys())
+auto_added = 0
+per_page_best = defaultdict(list)
+
+# Top-3 neighbors by tag overlap (min 2 shared tags)
+for i, a in enumerate(slugs):
+    pa = pages_meta[a]
+    if not pa["tags"]: continue
+    scores = []
+    for j, b in enumerate(slugs):
+        if i == j: continue
+        shared = pa["tags"] & pages_meta[b]["tags"]
+        if len(shared) >= 2:
+            scores.append((len(shared), b, sorted(shared)[0]))
+    scores.sort(reverse=True)
+    per_page_best[a] = [(b, lbl) for _, b, lbl in scores[:3]]
+
+for a, targets in per_page_best.items():
+    for b, label in targets:
+        key = tuple(sorted([a, b]))
+        if key not in seen_edges:
+            edges.append((key[0], "Concept→Concept", key[1], label))
+            seen_edges.add(key)
+            auto_added += 1
+
+# Subdomain fallback for pages still with no edges
+connected = set()
+for e in edges:
+    connected.add(e[0]); connected.add(e[2])
+
+subdomain_fallback = 0
+for a in slugs:
+    if a in connected: continue
+    pa = pages_meta[a]
+    if not pa["subdomain"]: continue
+    for b in slugs:
+        if a == b: continue
+        if pages_meta[b]["subdomain"] == pa["subdomain"] and b in connected:
+            key = tuple(sorted([a, b]))
+            if key not in seen_edges:
+                edges.append((key[0], "Concept→Concept", key[1], "subdomain"))
+                seen_edges.add(key)
+                subdomain_fallback += 1
+            connected.add(a)
+            break
+
+print(f"  Auto from tag-overlap: {auto_added}")
+print(f"  Subdomain fallback: {subdomain_fallback}")
+
+# 4. Write new compiled graph.md
 ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 out_path = os.path.join(GRAPH_DIR, f"{ts}-graph.md")
 os.makedirs(GRAPH_DIR, exist_ok=True)
