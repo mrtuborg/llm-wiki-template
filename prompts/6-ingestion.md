@@ -29,14 +29,17 @@ For each reconstructed file from Stage 5:
 3. **Page format** (follow existing wiki page style):
    ```markdown
    ---
+   title: Page Title
    type: reference|pattern|guide|overview|notes
    domain: DomainName
+   subdomain: SubdomainName
    tags: [tag1, tag2]
+   created: {{TIMESTAMP}}
+   updated: {{TIMESTAMP}}
    sources: [Vladimir/SubFolder/filename.md]
    source_files:
      - path: Vladimir/SubFolder/filename.md
        processed: {{TIMESTAMP}}
-   updated: {{TIMESTAMP}}
    ---
    
    # Page Title
@@ -44,6 +47,8 @@ For each reconstructed file from Stage 5:
    ## Section from this batch
    [content]
    ```
+   
+   **Required fields:** `title`, `type`, `domain`, `subdomain`, `created`, `updated` — all must be present.
 
 4. **Create/update** `{{WIKI_ROOT}}/wiki/updates/{{TIMESTAMP}}.md`:
    ```markdown
