@@ -25,11 +25,16 @@ For each decision-worthy pattern found in Stage 8 output (plus any found in inge
    type: decision
    status: accepted|proposed|superseded
    date: {{TIMESTAMP}}
-   domains: [Domain1, Domain2]
+   domain: Engineer
+   subdomain: AI-LLM
    sources: [source-file-basename]
    ---
    
    # ADR: {{Decision Title}}
+   
+   > ⚠️ `domain:` must be EXACTLY one of: Engineer / TechLead / Entrepreneur / Self-care / Family / Meta
+   > Match the domain of the source material. Use the most specific single domain.
+   > NEVER use old names: AI-LLM, Embedded-Linux, Yocto-BitBake, cross-domain, etc.
    
    ## Context
    [What problem does this solve / what situation led to this decision]

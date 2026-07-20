@@ -4,7 +4,8 @@
 #   2. Frontmatter duplication in body
 #   3. Domain validity (must be one of fixed role domains)
 #   4. Missing required frontmatter fields (title, type, domain, subdomain, created)
-# Excludes: wiki/templates/, wiki/decisions/, wiki/synthesis/, wiki/graph/, wiki/compiled/
+# Link check excludes: wiki/templates/, wiki/graph/, wiki/compiled/
+# Domain check: ALL wiki pages including decisions/ and synthesis/
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ENGINE_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -27,8 +28,11 @@ python3 << EOF
 import os, re, glob
 
 WIKI = "$WIKI"
-SYSTEM_DIRS = {"templates", "decisions", "synthesis", "graph", "compiled", "updates"}
-EXCLUDE_DIRS = {os.path.join(WIKI, d) for d in SYSTEM_DIRS}
+# Excluded from LINK checking (placeholder-heavy or generated files)
+LINK_EXCLUDE_DIRS = {os.path.join(WIKI, d) for d in {"templates", "graph", "compiled", "updates"}}
+# Excluded from DOMAIN checking (truly non-content dirs)
+DOMAIN_EXCLUDE_DIRS = {os.path.join(WIKI, d) for d in {"templates", "graph", "compiled"}}
+EXCLUDE_DIRS = LINK_EXCLUDE_DIRS  # backward compat for link checks
 
 ALLOWED_DOMAINS = {${DOMAINS_PY%??}}  # trim trailing ", "
 

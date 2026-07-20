@@ -27,7 +27,8 @@ If threshold IS met:
    ```markdown
    ---
    type: synthesis
-   domains: [Domain1, Domain2]
+   domain: Meta
+   subdomain: Synthesis
    updated: {{TIMESTAMP}}
    ---
    
@@ -42,6 +43,9 @@ If threshold IS met:
    ## Related Pages
    - [[wiki/Domain/page]] — summary
    ```
+   
+   > ⚠️ `domain:` must be EXACTLY one of: Engineer / TechLead / Entrepreneur / Self-care / Family / Meta
+   > Use `Meta` for cross-cutting synthesis. NEVER use `cross-domain`, `synthesis`, or old domain names.
 
 4. **Write stage output** to `pipeline/stage-output/current-8-synthesis.md`:
    ```markdown

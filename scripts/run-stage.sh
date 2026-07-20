@@ -87,3 +87,35 @@ if [[ "$STAGE" == "9-decision-log" && -f "$STAGE_OUT" ]]; then
     [[ $hashed -gt 0 ]] && echo "[run-stage] ✅ Stored hashes for $hashed source files"
     tracker_update_stats
 fi
+
+# Post-stage domain validation — catch bad domain: values written by agents
+if [[ "$STAGE" == "8-synthesis" || "$STAGE" == "9-decision-log" || "$STAGE" == "6-ingestion" ]]; then
+    echo ""
+    echo "[run-stage] 🔍 Checking domain validity of new pages..."
+    VALID_DOMAINS_LIST="${VALID_DOMAINS[*]:-Engineer TechLead Entrepreneur Self-care Family Meta}"
+    bad_count=$(python3 - "$WIKI_ROOT/wiki" "$VALID_DOMAINS_LIST" << 'PYEOF'
+import os, re, sys
+wiki = sys.argv[1]
+valid = set(sys.argv[2].split())
+bad = 0
+for root, _, files in os.walk(wiki):
+    for f in files:
+        if not f.endswith('.md'): continue
+        path = os.path.join(root, f)
+        m = re.search(r'^domain:\s*(.+)', open(path).read(), re.MULTILINE)
+        if m:
+            d = m.group(1).strip().strip('"\'')
+            if d and d not in valid:
+                print(f"  ❌ BAD DOMAIN [{d}]: {path.replace(wiki+'/', '')}", flush=True)
+                bad += 1
+print(bad)
+PYEOF
+    )
+    # Extract just the count (last line)
+    count=$(echo "$bad_count" | tail -1)
+    if [[ "$count" -gt 0 ]]; then
+        echo "[run-stage] ⚠️  $count pages with invalid domain: field — fix with: ./llm-wiki validate"
+    else
+        echo "[run-stage] ✅ All domains valid"
+    fi
+fi
