@@ -24,7 +24,7 @@ WIKI="${WIKI_DIR:-$WIKI_ROOT/wiki}"
 # Build Python-readable domain set from space-separated string (bash 3.2 safe)
 DOMAINS_PY=""
 for _d in $VALID_DOMAINS; do
-    DOMAINS_PY="${DOMAINS_PY}"${_d}", "
+    DOMAINS_PY="${DOMAINS_PY}'${_d}', "
 done
 
 python3 << EOF
