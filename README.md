@@ -1,138 +1,134 @@
-# LLM-Wiki Template
+# llm-wiki-engine
 
-A reusable template for building structured LLM-driven knowledge wikis.
-Based on Andrej Karpathy's llm-wiki approach, redesigned for raw technical data.
+A portable pipeline engine for building structured LLM-driven personal knowledge wikis (PKM).
+
+Inspired by Andrej Karpathy's llm-wiki approach. Designed to be used as a **git submodule** in any vault.
 
 ## Quick Start
 
 ```bash
-# 1. Copy this template
-cp -r ~/vaults/llm-wiki-template ~/vaults/my-new-wiki
+# 1. Create a new vault (git repo)
+git init ~/vaults/my-wiki && cd ~/vaults/my-wiki
 
-# 2. Configure sources
-#    Edit pipeline/config.md → set SOURCES_PATH to your raw data vault
-#    e.g. SOURCES_PATH = ~/vaults/Sources
+# 2. Add engine as submodule
+git submodule add git@github.com:mrtuborg/llm-wiki-template.git engine
 
-# 3. Configure domains
-#    Edit pipeline/1-domains-workflow.md
-#    Replace {{DOMAIN_SOURCES}} with your domains
+# 3. Bootstrap vault structure
+bash engine/init-vault.sh "My-Wiki"
 
-# 4. Run Setup Phase (once)
-#    Feed prompts to your LLM in order:
-#    Layer 1: pipeline/1-domains-workflow.md
-#    Layer 2: pipeline/2-Ontology-workflow.md
-#    Layer 3: pipeline/3-schema-layer.md
-#    Layer 4: pipeline/4-template-workflow.md
+# 4. Edit vault.config.yaml — set your domains
+#    (domains are FIXED — only humans change this list)
 
-# 5. Run Active Pipeline (per ingestion)
-#    Add raw files to SOURCES_PATH vault
-#    Layer 5: pipeline/5-reconstruction-workflow.md
-#    Layer 6: pipeline/6-ingestion-workflow.md
-#    Layer 7: pipeline/7-compilation-workflow.md
+# 5. Add raw sources
+./llm-wiki source add /path/to/raw/notes "My Notes"
 
-# 6. Run Enrichment (when ready)
-#    Layer 8: pipeline/8-synthesis-workflow.md
-#    Layer 9: pipeline/9-decision-log-workflow.md
+# 6. Run pipeline
+./llm-wiki add                    # process new files
+./llm-wiki search "my query"      # semantic search
+./llm-wiki status                 # progress overview
 ```
 
-## Architecture
+## Engine Structure
 
 ```
-Setup Phase (run once)        Active Pipeline (per ingestion)    Enrichment (optional)
-┌─────────────────────┐       ┌────────────────────────────┐     ┌──────────────────┐
-│ 1. Domains          │       │ 5. Reconstruction          │     │ 8. Synthesis     │
-│ 2. Ontology         │──────▶│ 6. Ingestion               │────▶│ 9. Decision Logs │
-│ 3. Schema           │       │ 7. Compilation             │     │    (may trigger   │
-│ 4. Templates        │       │                            │     │     re-compile)   │
-└─────────────────────┘       └────────────────────────────┘     └──────────────────┘
+engine/
+├── scripts/              ← Pipeline orchestration (entry point: orchestrator.sh)
+│   ├── orchestrator.sh   ← Main CLI
+│   ├── embed.py / .sh    ← Semantic embeddings (Ollama)
+│   ├── search.py / .sh   ← Semantic search
+│   ├── build-source-map.py
+│   ├── run-stage.sh
+│   ├── mode-add.sh / mode-maintain.sh
+│   └── lib/
+│       ├── vault-config.sh   ← Reads vault.config.yaml
+│       ├── tracker.sh        ← Progress tracking
+│       └── context-builder.sh
+├── prompts/              ← Stage prompt templates (Layers 5–9)
+├── tools/
+│   ├── validate/check-dead-links.sh   ← Structural validation
+│   ├── compile/render-graph.py        ← Knowledge graph
+│   └── ingest/discover-domains.sh
+├── templates/            ← Wiki page templates (axiom/concept/decision/…)
+├── ontology/             ← OTF type definitions
+├── schema/               ← Field/type/linking schema
+├── vault.config.template.yaml   ← Config template for new vaults
+└── init-vault.sh         ← Bootstrap script
 ```
 
-## What to Customize
-
-| File | What to change |
-|------|----------------|
-| `pipeline/config.md` | **Required.** Set `SOURCES_PATH` to your raw data vault (e.g. `~/vaults/Sources`) |
-| `pipeline/1-domains-workflow.md` | **Required.** Replace `{{DOMAIN_SOURCES}}` with your knowledge domains |
-| `pipeline/0-master-pipeline.md` | Optional. Adjust growth model or schema evolution interval |
-| `ontology/relationships.md` | Optional. Add domain-specific node types or edges |
-| `ontology/otf-types.md` | Optional. Update OTF mapping if node types change |
-
-Everything else is domain-independent and works as-is.
-
-## Directory Structure
+## Vault Structure (after init)
 
 ```
-/
-├── pipeline/               # LLM prompt files (the system)
-│   ├── config.md                   ← set SOURCES_PATH here
-│   ├── 0-master-pipeline.md
-│   ├── 0-orchestrator-workflow.md
-│   ├── 1-domains-workflow.md       ← set your domains here
-│   ├── 2-Ontology-workflow.md
-│   ├── 3-schema-layer.md
-│   ├── 4-template-workflow.md
-│   ├── 5-reconstruction-workflow.md
-│   ├── 6-ingestion-workflow.md
-│   ├── 7-compilation-workflow.md
-│   ├── 8-synthesis-workflow.md
-│   ├── 9-decision-log-workflow.md
-│   ├── artifact-ownership-matrix.md
-│   └── handoff/provenance/         # intermediate provenance data
-│
-├── ontology/               # Knowledge structure definitions
-│   ├── relationships.md    # semantic edges (authoritative)
-│   ├── provenance.md       # non-semantic edges
-│   ├── otf.md              # OTF framework
-│   └── otf-types.md        # node type → OTF mapping
-│
-├── schema/                 # Page type definitions (generated by Layer 3)
-├── domains/                # Domain definitions (generated by Layer 1)
-├── wiki/                   # Knowledge pages (generated by Layers 6-9)
-│   ├── templates/          # Page templates (generated by Layer 4)
-│   ├── updates/            # Ingestion change logs
-│   ├── compiled/           # Compilation reports
-│   ├── graph/              # Semantic + provenance graphs
-│   ├── synthesis/          # Cross-domain synthesis pages
-│   └── decisions/          # Decision log pages
-│
-├── raw/reconstructed/      # Processed by Reconstruction Layer (stays in wiki)
-├── tools/                  # Optional automation
-│
-└── [SOURCES_PATH]          # External vault — raw data lives here, NOT in this wiki
-                            # e.g. ~/vaults/Sources
+my-vault/
+├── engine/               ← git submodule (this repo)
+├── vault.config.yaml     ← Vault-specific settings (domains, paths)
+├── llm-wiki              ← Convenience wrapper → engine/scripts/orchestrator.sh
+├── wiki/                 ← Knowledge pages (Engineer/, Meta/, …)
+├── domains/              ← Domain documentation
+├── ontology/             ← Copied from engine on init
+├── schema/               ← Copied from engine on init
+└── pipeline/
+    ├── tracking/         ← progress.json, sources.json, source-map.json
+    ├── index/            ← embeddings.db
+    ├── reconstructed/    ← Stage 5 outputs
+    ├── stage-output/     ← Stage run logs
+    └── prompts/          ← _context.md (vault-specific, generated)
 ```
 
-## 10 Node Types
+## vault.config.yaml
 
-| Type | OTF | Role |
-|------|-----|------|
-| Axiom | OTF:Invariant | Immutable truth (physical law, hardware constraint) |
-| Entity | OTF:Object | Concrete object (peripheral, module, struct) |
-| Process | OTF:Process | Action sequence entities participate in |
-| Pattern | OTF:Structure | Abstract behavioral structure |
-| Method | OTF:Procedure | Concrete implementation of a Pattern |
-| Decision | OTF:Choice | Recorded choice from conversational reasoning |
-| Rule | OTF:Condition | Contextual justification for a Decision |
-| Concept | OTF:Abstraction | Abstract idea generalizing entities/rules |
-| Overview | OTF:Summary | Human-readable page explaining one Concept |
-| Synthesis | OTF:Integration | Architect-level cross-domain integration |
+All vault-specific settings live here. Domains are **fixed** — only humans edit them.
 
-## Growth Model
+```yaml
+vault:
+  name: "My-Wiki"
 
-The wiki grows incrementally ("bad cake → good cake"):
+wiki:
+  dir: wiki
+  domains: [Engineer, TechLead, Meta]   # FIXED — only human can change
+  subdomains:
+    Engineer: [AI-LLM, Electronics]     # agents can add subdomains
+  fallback_subdomain: Unrecognized      # for content that fits no subdomain
 
-1. **Skeleton** — Setup Phase creates structure, no knowledge yet
-2. **Core** — Active Pipeline creates typed pages (Entity, Process, Axiom, Pattern, Method)
-3. **Connected** — Compilation builds semantic graph
-4. **Enriched** — Synthesis and Decision Logs add upper-layer nodes
-5. **Complete** — All 10 node types populated, full graph
+pipeline:
+  tracking_dir: pipeline/tracking
+  index_dir: pipeline/index
+  prompts_dir: pipeline/prompts
 
-The graph is valid at every stage. Skip stages freely.
+embedding:
+  model: mxbai-embed-large
+  host: http://localhost:11434
+```
 
-## Key Principles
+## CLI Commands
 
-- **Single ownership**: every artifact has exactly one layer that writes it
-- **Epistemic layering**: lower types don't reference higher types
-- **Semantic/provenance separation**: two independent edge graphs
-- **Incremental growth**: the wiki is always valid, never "broken"
-- **Deterministic templates**: same input → same page structure
+```
+./llm-wiki add               # Process new source files through pipeline (Layers 5–9)
+./llm-wiki maintain          # Health check + index sync
+./llm-wiki status            # Progress, source coverage, embedding stats
+./llm-wiki sources           # List sources with attribution
+./llm-wiki source add <path> # Add a raw source
+./llm-wiki validate          # Validate domain, fields, links
+./llm-wiki search "query"    # Semantic search
+./llm-wiki stage <name>      # Run one stage manually
+```
+
+## Pipeline Layers
+
+| Layer | Stage | What it does |
+|-------|-------|-------------|
+| 5 | Reconstruction | Extracts structured content from raw files |
+| 6 | Ingestion | Creates typed wiki pages with frontmatter |
+| 7 | Compilation | Updates index.md, validates links |
+| 8 | Synthesis | Creates overview/synthesis pages |
+| 9 | Decision Log | Captures architectural decisions |
+
+## Attaching to an existing vault
+
+If your vault is NOT a git repo, use a symlink:
+
+```bash
+ln -s ~/vaults/llm-wiki-engine ~/vaults/my-existing-vault/engine
+cp ~/vaults/llm-wiki-engine/vault.config.template.yaml ~/vaults/my-existing-vault/vault.config.yaml
+# Edit vault.config.yaml, then:
+bash ~/vaults/my-existing-vault/engine/init-vault.sh
+```

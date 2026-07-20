@@ -1,0 +1,28 @@
+# vault.config.yaml — Vault-specific configuration for llm-wiki-engine
+# Copy this to your vault root and edit.
+
+vault:
+  name: "My-Wiki"                  # Human-readable vault name
+
+wiki:
+  dir: wiki                        # Relative to vault root (where wiki pages live)
+  domains:                         # FIXED — only human can change this list
+    - Domain1
+    - Domain2
+    - Meta
+  subdomains:                      # Agents can add subdomains freely
+    Domain1: [Sub1, Sub2]
+    Domain2: [Sub1, Sub2]
+    Meta: []
+  fallback_subdomain: Unrecognized # Content that fits no subdomain goes here
+
+pipeline:
+  tracking_dir: pipeline/tracking  # progress.json, sources.json, source-map.json
+  index_dir: pipeline/index        # embeddings.db
+  reconstructed_dir: pipeline/reconstructed  # Stage 5 outputs
+  stage_output_dir: pipeline/stage-output    # Stage run logs
+  prompts_dir: pipeline/prompts    # _context.md lives here
+
+embedding:
+  model: mxbai-embed-large
+  host: http://localhost:11434

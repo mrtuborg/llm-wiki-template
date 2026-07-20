@@ -57,6 +57,7 @@ Allowed Semantic Edges:
 - Entity → Entity (relates_to)
 - Process → Process (follows)
 - Pattern → Pattern (specializes)
+- Meta Axiom → any node (governs)    [Meta domain only; system-schema invariants govern all typed pages]
 
 Forbidden Semantic Edges:
 
