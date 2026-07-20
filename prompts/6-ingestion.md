@@ -6,15 +6,12 @@
 {{SHARED_CONTEXT}}
 
 ### Domain Classification Reference
-Before classifying any content, read these subdomain dictionaries:
-- `{{WIKI_ROOT}}/domains/Engineer/subdomains.md`
-- `{{WIKI_ROOT}}/domains/TechLead/subdomains.md`
-- `{{WIKI_ROOT}}/domains/Entrepreneur/subdomains.md`
-- `{{WIKI_ROOT}}/domains/Self-care/subdomains.md`
-- `{{WIKI_ROOT}}/domains/Family/subdomains.md`
-- `{{WIKI_ROOT}}/domains/Meta/subdomains.md`
+Read `{{WIKI_ROOT}}/vault.config.yaml` to get the list of configured domains.
+Then for each domain, try to read `{{WIKI_ROOT}}/domains/<Domain>/subdomains.md` if it exists.
+**If a domain's subdomains.md is missing — that's OK, skip it and infer subdomain from content.**
 
-Use these to decide domain + subdomain for each fragment. When content doesn't fit any described subdomain, use `Unrecognized` — do NOT invent domain names.
+Use domain dictionaries (when available) to decide domain + subdomain for each fragment.
+When content doesn't fit any described subdomain, use `Unrecognized` — do NOT invent domain names.
 
 ### Input
 Read `{{WIKI_ROOT}}/pipeline/stage-output/current-5-reconstruction.md`  
