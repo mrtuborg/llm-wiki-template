@@ -15,7 +15,7 @@ import sys, os, re, glob, json, math
 from collections import defaultdict, Counter
 
 wiki_root = sys.argv[1]
-apply = sys.argv[2] == "True"
+apply = sys.argv[2].lower() == "true"
 
 sources_f = os.path.join(wiki_root, "pipeline/tracking/sources.json")
 sources = json.load(open(sources_f)).get("sources", [])
