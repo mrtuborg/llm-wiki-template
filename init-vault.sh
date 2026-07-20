@@ -54,7 +54,7 @@ cp "$ENGINE_DIR/templates/"*.md "$VAULT_ROOT/wiki/templates/" 2>/dev/null && \
 
 # 5. Initialize empty tracking files
 if [ ! -f "$VAULT_ROOT/pipeline/tracking/progress.json" ]; then
-    echo '{"files": {}, "stats": {"total": 0, "done": 0, "pending": 0}, "updated_at": null}' \
+    echo '{"sources": {}, "stats": {"total": 0, "done": 0, "pending": 0}, "updated_at": null}' \
         > "$VAULT_ROOT/pipeline/tracking/progress.json"
     echo "✓ progress.json initialized"
 fi
@@ -63,6 +63,40 @@ if [ ! -f "$VAULT_ROOT/pipeline/tracking/sources.json" ]; then
     echo '{"sources": [], "updated_at": null}' \
         > "$VAULT_ROOT/pipeline/tracking/sources.json"
     echo "✓ sources.json initialized"
+fi
+
+# 6. Wiki index and sources registry (required by stage 7)
+if [ ! -f "$VAULT_ROOT/wiki/index.md" ]; then
+    cat > "$VAULT_ROOT/wiki/index.md" << INDEXEOF
+# $VAULT_NAME — Wiki Index
+
+Generated: $(date -u +%Y-%m-%d)
+
+## Domains
+(populated after first ./llm-wiki add run)
+
+## Recent Updates
+(none yet)
+INDEXEOF
+    echo "✓ wiki/index.md initialized"
+fi
+
+if [ ! -f "$VAULT_ROOT/pipeline/sources-registry.md" ]; then
+    cat > "$VAULT_ROOT/pipeline/sources-registry.md" << 'REGEOF'
+# Sources Registry
+
+| Source | Path | Status |
+|--------|------|--------|
+
+## Status Legend
+| Status | Meaning |
+|--------|---------|
+| `pending` | Not yet processed |
+| `ingested` | Layers 5–6 done |
+| `compiled` | Layers 5–7 done; in index |
+| `done` | All layers complete |
+REGEOF
+    echo "✓ pipeline/sources-registry.md initialized"
 fi
 
 # 6. Entry-point wrapper (optional convenience)

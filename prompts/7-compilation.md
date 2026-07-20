@@ -27,7 +27,7 @@ This lists all wiki pages created/updated in Stage 6.
    - For each source processed this batch: set status to `compiled`
    - Update "Last compilation" timestamp in the header
 
-4. **Update tracking** in `progress.json`:
+4. **Update tracking** in `pipeline/tracking/progress.json`:
    - Set `status: "compiled"` for sources that were `ingested`
    - Update `stats.compiled` count
    - Update `last_compilation` timestamp
