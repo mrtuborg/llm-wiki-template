@@ -22,8 +22,6 @@ STAGE="${1:?Usage: run-stage.sh <stage-name> [batch_id] [batch_size]}"
 BATCH_ID="${2:-batch-$(date -u +%Y%m%dT%H%M%SZ)}"
 BATCH_SIZE="${3:-3}"
 
-# SOURCES_DIR resolved from active sources in vault (see orchestrator source add)
-
 echo ""
 echo "┌─────────────────────────────────────────────────────┐"
 echo "│  STAGE: $STAGE"
@@ -35,7 +33,22 @@ echo ""
 prompt_file=$(build_prompt "$STAGE" "$BATCH_ID" "$BATCH_SIZE")
 echo "[run-stage] Prompt: $prompt_file ($(wc -c < "$prompt_file") bytes)"
 
-# Invoke gh copilot in non-interactive mode
+# Build --add-dir flags: wiki root + all active sources from sources.json
+SOURCES_FILE="${TRACKING_DIR:-$WIKI_ROOT/pipeline/tracking}/sources.json"
+add_dir_args=("--add-dir" "$WIKI_ROOT")
+if [[ -f "$SOURCES_FILE" ]]; then
+    while IFS= read -r src_path; do
+        [[ -n "$src_path" && -d "$src_path" ]] && add_dir_args+=("--add-dir" "$src_path")
+    done < <(python3 -c "
+import json
+data = json.load(open('$SOURCES_FILE'))
+for s in data.get('sources', []):
+    if s.get('active') and s.get('path'):
+        print(s['path'])
+")
+fi
+
+echo "[run-stage] Dirs: ${add_dir_args[*]}"
 echo "[run-stage] Launching gh copilot..."
 echo ""
 
@@ -43,8 +56,7 @@ gh copilot -- \
     -p "$(cat "$prompt_file")" \
     --allow-all-tools \
     --allow-all-paths \
-    --add-dir "$WIKI_ROOT" \
-    --add-dir "$SOURCES_DIR"
+    "${add_dir_args[@]}"
 
 EXIT_CODE=$?
 
