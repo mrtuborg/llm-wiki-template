@@ -6,7 +6,7 @@
 
 1. **Run dead link validator**:
    ```bash
-   cd {{WIKI_ROOT}} && bash tools/validate/check-dead-links.sh
+   cd {{WIKI_ROOT}} && bash engine/tools/validate/check-dead-links.sh
    ```
 
 2. **Check index consistency**:

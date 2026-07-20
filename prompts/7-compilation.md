@@ -10,7 +10,7 @@ This lists all wiki pages created/updated in Stage 6.
 
 1. **Run dead link validator**:
    ```bash
-   cd {{WIKI_ROOT}} && bash tools/validate/check-dead-links.sh
+   cd {{WIKI_ROOT}} && bash engine/tools/validate/check-dead-links.sh
    ```
    Record result in stage output.
 
