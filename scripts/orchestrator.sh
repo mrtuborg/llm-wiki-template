@@ -126,6 +126,12 @@ case "$MODE" in
         "$SCRIPT_DIR/mode-maintain.sh" "$@"
         ;;
 
+    refine-domains)
+        print_banner "REFINE DOMAINS — Semantic clustering"
+        check_prerequisites
+        bash "$SCRIPT_DIR/refine-domains.sh" "$@"
+        ;;
+
     status)
         print_banner "STATUS"
         tracker_init
@@ -372,7 +378,7 @@ else:
     *)
         echo "❌ Unknown mode: $MODE"
         echo ""
-        echo "Usage: orchestrator.sh [add|maintain|status|stage|sync]"
+        echo "Usage: orchestrator.sh [add|maintain|refine-domains|status|stage|sync]"
         exit 1
         ;;
 esac
