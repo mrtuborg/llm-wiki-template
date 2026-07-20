@@ -52,6 +52,11 @@ echo ""
 echo "▶ Stage 6c: Deduplication..."
 "$SCRIPT_DIR/run-stage.sh" "6c-dedup" "$BATCH_ID"
 
+# Stage 7b: Embeddings (incremental — keeps similarity index fresh)
+echo ""
+echo "▶ Stage 7b: Embeddings (incremental)..."
+bash "$SCRIPT_DIR/embed.sh" --incremental
+
 # Optional synthesis
 if [ "$WITH_SYNTHESIS" = "true" ]; then
     echo ""

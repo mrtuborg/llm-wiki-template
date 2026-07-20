@@ -92,7 +92,7 @@ while true; do
     # Stage 6c: Deduplication
     echo ""
     echo "▶ Stage 6c: Deduplication..."
-    "$SCRIPT_DIR/run-stage.sh" "6c-dedup" "$BATCH_ID" "$BATCH_SIZE"
+    "$SCRIPT_DIR/run-stage.sh" "6c-dedup" "$BATCH_ID"
 
     # Stage 7: Compilation
     echo ""
