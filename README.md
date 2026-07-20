@@ -4,6 +4,46 @@ A portable pipeline engine for building structured LLM-driven personal knowledge
 
 Inspired by Andrej Karpathy's llm-wiki approach. Designed to be used as a **git submodule** in any vault.
 
+## How LLM Agents Are Used
+
+Each pipeline stage is executed by invoking **`gh copilot`** as a non-interactive agent:
+
+```
+./llm-wiki add
+      │
+      ▼
+orchestrator.sh          ← picks pending files, loops until done
+      │
+      ▼
+run-stage.sh             ← one stage per batch
+      │
+      ├── context-builder.sh
+      │     ├── pipeline/prompts/_context.md   ← vault-specific context (paths, domains)
+      │     └── engine/prompts/<stage>.md      ← stage instructions
+      │
+      └── gh copilot                           ← LLM agent
+            --allow-all-tools
+            --allow-all-paths
+            --add-dir $WIKI_ROOT               ← full vault access
+            --add-dir $SOURCES_DIR             ← raw source files
+```
+
+The agent receives a composed prompt (vault context + stage instructions) and is granted full file access to both the wiki and the source directory. It reads raw source files, creates or updates wiki pages, and writes stage output — all autonomously, guided by the ontology, schema, and templates defined in the vault.
+
+**What each invocation produces:**
+
+| Stage | Agent task |
+|-------|-----------|
+| 5 – Reconstruction | Reads raw source files → writes structured `.md` extracts to `pipeline/reconstructed/` |
+| 6 – Ingestion | Reads reconstructed files → creates typed wiki pages under `wiki/<domain>/` |
+| 7 – Compilation | Validates pages, updates `index.md` files, checks semantic links |
+| 8 – Synthesis | Generates overview/synthesis pages when compilation triggers exist |
+| 9 – Decision Log | Captures architectural decisions from conversational reasoning |
+
+**Dependencies:**
+- `gh copilot` CLI must be installed and authenticated
+- Semantic embeddings use **Ollama** (`mxbai-embed-large`, `http://localhost:11434`)
+
 ## Quick Start
 
 ```bash
@@ -114,13 +154,21 @@ embedding:
 
 ## Pipeline Layers
 
-| Layer | Stage | What it does |
-|-------|-------|-------------|
-| 5 | Reconstruction | Extracts structured content from raw files |
-| 6 | Ingestion | Creates typed wiki pages with frontmatter |
-| 7 | Compilation | Updates index.md, validates links |
-| 8 | Synthesis | Creates overview/synthesis pages |
-| 9 | Decision Log | Captures architectural decisions |
+The pipeline is split into three phases. **Setup** (Layers 1–4) runs once on init and only when the vault structure changes. **Active** (Layers 5–7) is the normal ingestion cycle. **Enrichment** (Layers 8–9) runs when enough material has accumulated.
+
+| Phase | Layer | Stage | What the agent does |
+|-------|-------|-------|---------------------|
+| Setup | 1 | Domains | Define domain boundaries; no knowledge written |
+| Setup | 2 | Ontology | Define all node types, edges, constraints |
+| Setup | 3 | Schema | Define page types, fields, linking rules |
+| Setup | 4 | Templates | Generate deterministic page templates |
+| Active | 5 | Reconstruction | Extract axioms/invariants from raw source files |
+| Active | 6 | Ingestion | Convert reconstructed data into typed wiki pages |
+| Active | 7 | Compilation | Validate, deduplicate, update index.md, build graph |
+| Enrichment | 8 | Synthesis | Generate overview/synthesis pages from compiled content |
+| Enrichment | 9 | Decision Log | Capture architectural decisions from reasoning trails |
+
+Layers 1–4 are run by the human (or manually via `./llm-wiki stage`). Layers 5–9 are run automatically on every `./llm-wiki add` or `./llm-wiki maintain --synthesis` call.
 
 ## Attaching to an existing vault
 
