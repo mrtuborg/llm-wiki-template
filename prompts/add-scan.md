@@ -4,14 +4,14 @@
 
 ### Your Task: Scan for Unprocessed Source Files
 
-1. Read `~/vaults/Vladimir-llm-wiki/pipeline/tracking/progress.json`
-2. Read `~/vaults/Vladimir-llm-wiki/pipeline/config/pipeline.yaml` (see `sources.exclude`)
+1. Read `{{WIKI_ROOT}}/pipeline/tracking/progress.json`
+2. Read `{{WIKI_ROOT}}/pipeline/config/pipeline.yaml` (see `sources.exclude`)
 3. Scan all `.md` files under `~/vaults/Vladimir` (recursively)
 4. For each file NOT present in `progress.json` OR with status `pending`:
    - Add it to the queue with `status: "queued"`
 5. Skip files matching exclusion patterns from config
 6. Write the updated `progress.json`
-7. Write `~/vaults/Vladimir-llm-wiki/pipeline/tracking/queue.json` with this format:
+7. Write `{{WIKI_ROOT}}/pipeline/tracking/queue.json` with this format:
 
 ```json
 {
@@ -26,7 +26,7 @@
 }
 ```
 
-8. Write `~/vaults/Vladimir-llm-wiki/pipeline/stage-output/current-5-reconstruction.md`:
+8. Write `{{WIKI_ROOT}}/pipeline/stage-output/current-5-reconstruction.md`:
 
 ```markdown
 # Scan Results — {{TIMESTAMP}}

@@ -45,7 +45,7 @@ For each reconstructed file from Stage 5:
    [content]
    ```
 
-4. **Create/update** `~/vaults/Vladimir-llm-wiki/wiki/updates/{{TIMESTAMP}}.md`:
+4. **Create/update** `{{WIKI_ROOT}}/wiki/updates/{{TIMESTAMP}}.md`:
    ```markdown
    # Ingestion Update — {{TIMESTAMP}}
    ## Source batch

@@ -3,7 +3,7 @@
 {{SHARED_CONTEXT}}
 
 ### Input
-Read `~/vaults/Vladimir-llm-wiki/pipeline/stage-output/current-8-synthesis.md`  
+Read `{{WIKI_ROOT}}/pipeline/stage-output/current-8-synthesis.md`  
 Look for "Decision-worthy patterns found" section.
 
 ### Your Task: Record Architectural Decisions

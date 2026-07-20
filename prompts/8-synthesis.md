@@ -3,7 +3,7 @@
 {{SHARED_CONTEXT}}
 
 ### Input
-Read `~/vaults/Vladimir-llm-wiki/pipeline/stage-output/current-7-compilation.md`  
+Read `{{WIKI_ROOT}}/pipeline/stage-output/current-7-compilation.md`  
 Check if synthesis threshold was met (≥5 new pages in this batch).
 
 ### Your Task: Create/Update Synthesis Pages

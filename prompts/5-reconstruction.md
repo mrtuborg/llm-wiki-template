@@ -3,9 +3,9 @@
 {{SHARED_CONTEXT}}
 
 ### Input
-- Stage output from scan: `~/vaults/Vladimir-llm-wiki/pipeline/stage-output/current-5-reconstruction.md`  
+- Stage output from scan: `{{WIKI_ROOT}}/pipeline/stage-output/current-5-reconstruction.md`  
   *(read this to get the list of source files for this batch)*
-- Current batch queue: `~/vaults/Vladimir-llm-wiki/pipeline/tracking/queue.json`
+- Current batch queue: `{{WIKI_ROOT}}/pipeline/tracking/queue.json`
 
 ### Your Task: Reconstruct Knowledge from Raw Sources
 
@@ -19,7 +19,7 @@ For each file listed in the scan output / queue:
    - Even incomplete fragments → reconstruct using context
 3. **Classify each fragment** by domain (see domain map in shared context)
 4. **Create a reconstructed file** at:
-   `~/vaults/Vladimir-llm-wiki/pipeline/reconstructed/{{TIMESTAMP}}-{{TOPIC}}.md`
+   `{{WIKI_ROOT}}/pipeline/reconstructed/{{TIMESTAMP}}-{{TOPIC}}.md`
    
    Format:
    ```markdown

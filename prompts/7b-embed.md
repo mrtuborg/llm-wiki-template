@@ -3,14 +3,14 @@
 {{SHARED_CONTEXT}}
 
 ### Input
-Read `~/vaults/Vladimir-llm-wiki/pipeline/stage-output/current-7-compilation.md`
+Read `{{WIKI_ROOT}}/pipeline/stage-output/current-7-compilation.md`
 
 ### Your Task
 
 Run the embedding script in incremental mode to index only new/changed pages:
 
 ```bash
-cd ~/vaults/Vladimir-llm-wiki
+cd {{WIKI_ROOT}}
 bash engine/scripts/embed.sh  # or: ./llm-wiki sync --incremental
 ```
 

@@ -3,14 +3,14 @@
 {{SHARED_CONTEXT}}
 
 ### Input
-Read `~/vaults/Vladimir-llm-wiki/pipeline/stage-output/current-6-ingestion.md`  
+Read `{{WIKI_ROOT}}/pipeline/stage-output/current-6-ingestion.md`  
 This lists all wiki pages created/updated in Stage 6.
 
 ### Your Task: Validate, Compile, and Update Index
 
 1. **Run dead link validator**:
    ```bash
-   cd ~/vaults/Vladimir-llm-wiki && bash tools/validate/check-dead-links.sh
+   cd {{WIKI_ROOT}} && bash tools/validate/check-dead-links.sh
    ```
    Record result in stage output.
 
