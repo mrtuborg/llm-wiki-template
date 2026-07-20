@@ -143,7 +143,8 @@ embedding:
 
 ```
 ./llm-wiki add               # Process new source files through pipeline (Layers 5–9)
-./llm-wiki maintain          # Health check + index sync
+./llm-wiki maintain          # Health check + compilation (Stage 7)
+./llm-wiki maintain --synthesis  # + synthesis pass (Stage 8)
 ./llm-wiki status            # Progress, source coverage, embedding stats
 ./llm-wiki sources           # List sources with attribution
 ./llm-wiki source add <path> # Add a raw source
@@ -151,6 +152,25 @@ embedding:
 ./llm-wiki search "query"    # Semantic search
 ./llm-wiki stage <name>      # Run one stage manually
 ```
+
+## Semantic Embeddings
+
+Embeddings are **not** built by `./llm-wiki add`. Run separately after ingestion:
+
+```bash
+cd engine/scripts
+
+bash embed.sh            # Incremental — only new/changed wiki pages
+bash embed.sh --full     # Full rebuild of embeddings.db
+bash embed.sh --model nomic-embed-text  # Override model
+```
+
+**Requirements:**
+- Ollama running: `ollama serve`
+- Model pulled: `ollama pull mxbai-embed-large`
+- Python 3.12: `/opt/homebrew/bin/python3.12`
+
+Index stored at: `pipeline/index/embeddings.db`
 
 ## Pipeline Layers
 
