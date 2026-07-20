@@ -105,25 +105,27 @@ if [[ "$STAGE" == "8-synthesis" || "$STAGE" == "9-decision-log" || "$STAGE" == "
     echo ""
     echo "[run-stage] 🔍 Checking domain validity of new pages..."
     VALID_DOMAINS_LIST="${VALID_DOMAINS[*]:-Engineer TechLead Entrepreneur Self-care Family Meta}"
-    bad_count=$(python3 - "$WIKI_ROOT/wiki" "$VALID_DOMAINS_LIST" << 'PYEOF'
+    _py_tmp=$(mktemp /tmp/run-stage-validate.XXXXXX.py)
+    cat > "$_py_tmp" << 'PYEOF'
 import os, re, sys
 wiki = sys.argv[1]
 valid = set(sys.argv[2].split())
 bad = 0
 for root, _, files in os.walk(wiki):
     for f in files:
-        if not f.endswith('.md'): continue
+        if not f.endswith(".md"):
+            continue
         path = os.path.join(root, f)
-        m = re.search(r'^domain:\s*(.+)', open(path).read(), re.MULTILINE)
+        m = re.search(r"^domain:\s*(.+)", open(path).read(), re.MULTILINE)
         if m:
-            d = m.group(1).strip().strip('"\'')
+            d = m.group(1).strip().strip(chr(34)).strip(chr(39))
             if d and d not in valid:
-                print(f"  ❌ BAD DOMAIN [{d}]: {path.replace(wiki+'/', '')}", flush=True)
+                print("  BAD DOMAIN [" + d + "]: " + path.replace(wiki + "/", ""), flush=True)
                 bad += 1
 print(bad)
 PYEOF
-    )
-    # Extract just the count (last line)
+    bad_count=$(python3 "$_py_tmp" "$WIKI_ROOT/wiki" "$VALID_DOMAINS_LIST")
+    rm -f "$_py_tmp"
     count=$(echo "$bad_count" | tail -1)
     if [[ "$count" -gt 0 ]]; then
         echo "[run-stage] ⚠️  $count pages with invalid domain: field — fix with: ./llm-wiki validate"
