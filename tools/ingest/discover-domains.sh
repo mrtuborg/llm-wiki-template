@@ -20,7 +20,7 @@ echo ""
 total_pages=0
 unrecognized_total=0
 
-for domain in "${VALID_DOMAINS[@]:-Engineer TechLead Entrepreneur Self-care Family Meta}"; do
+for domain in ${VALID_DOMAINS:-Engineer TechLead Entrepreneur Self-care Family Meta}; do
     domain_dir="$WIKI/$domain"
     [ -d "$domain_dir" ] || continue
 

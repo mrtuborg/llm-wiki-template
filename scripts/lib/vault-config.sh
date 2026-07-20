@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# vault-config.sh — reads vault.config.yaml, exports config vars for all scripts
+# vault-config.sh — reads vault.config.yaml, exports config vars (bash 3.2 compatible)
 # Source this after WIKI_ROOT is set.
 
 _VAULT_CONFIG="${WIKI_ROOT}/vault.config.yaml"
@@ -10,7 +10,6 @@ if [ ! -f "$_VAULT_CONFIG" ]; then
     return 1
 fi
 
-# Parse via python3 (PyYAML available in this environment)
 _vc_py() {
     python3 - "$_VAULT_CONFIG" << 'PYEOF'
 import sys, yaml, json
@@ -30,8 +29,9 @@ print(f"PROMPTS_DIR={json.dumps(p.get('prompts_dir','pipeline/prompts'))}")
 print(f"EMBED_MODEL={json.dumps(e.get('model','mxbai-embed-large'))}")
 print(f"EMBED_HOST={json.dumps(e.get('host','http://localhost:11434'))}")
 print(f"FALLBACK_SUBDOMAIN={json.dumps(w.get('fallback_subdomain','Unrecognized'))}")
+# Export domains as space-separated string (bash 3.2: no array export)
 domains = w.get('domains', [])
-print(f"VALID_DOMAINS=({' '.join(json.dumps(d) for d in domains)})")
+print(f"VALID_DOMAINS={json.dumps(' '.join(domains))}")
 a = cfg.get('agent', {})
 print(f"AGENT_MODEL={json.dumps(a.get('model','auto'))}")
 sm = a.get('stage_models', {}) or {}
@@ -41,10 +41,9 @@ for stage, model in sm.items():
 PYEOF
 }
 
-# Evaluate exported variables
 eval "$(_vc_py)"
 
-# Resolve to absolute paths
+# Resolve relative paths to absolute
 WIKI_DIR="$WIKI_ROOT/$WIKI_DIR"
 TRACKING_DIR="$WIKI_ROOT/$TRACKING_DIR"
 INDEX_DIR="$WIKI_ROOT/$INDEX_DIR"
@@ -54,4 +53,5 @@ PROMPTS_DIR="$WIKI_ROOT/$PROMPTS_DIR"
 
 export VAULT_NAME WIKI_DIR TRACKING_DIR INDEX_DIR RECONSTRUCTED_DIR \
        STAGE_OUTPUT_DIR PROMPTS_DIR EMBED_MODEL EMBED_HOST \
-       FALLBACK_SUBDOMAIN VALID_DOMAINS
+       FALLBACK_SUBDOMAIN VALID_DOMAINS AGENT_MODEL
+# Note: AGENT_MODEL_<STAGE> vars are exported individually by eval above

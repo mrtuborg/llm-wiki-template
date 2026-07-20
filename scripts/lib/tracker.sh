@@ -260,21 +260,16 @@ tracker_scan_sources() {
     echo "[tracker] Scanning sources: $sources_dir"
 
     # Excluded directory name fragments (from pipeline.yaml)
-    local -a EXCLUDED=(".trash" ".obsidian" "Sensio-Confluence" "Продукты" "Checklist" "Домашние дела")
-
     local added=0 already=0 skipped_dir=0
     local tmp
 
     while IFS= read -r filepath; do
-        # Check exclusions
-        local skip=false
-        for excl in "${EXCLUDED[@]}"; do
-            if [[ "$filepath" == *"$excl"* ]]; then
-                skip=true
-                break
-            fi
-        done
-        if $skip; then
+        # Check exclusions (bash 3.2 safe: case pattern instead of array loop)
+        case "$filepath" in
+            */.trash/*|*/.obsidian/*|*/Sensio-Confluence/*|            *Продукты*|*/Checklist/*|*"Домашние дела"*) skip_excl=true ;;
+            *) skip_excl=false ;;
+        esac
+        if [ "$skip_excl" = "true" ]; then
             skipped_dir=$((skipped_dir + 1))
             continue
         fi

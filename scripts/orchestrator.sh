@@ -224,85 +224,81 @@ else:
 
     validate)
         print_banner "VALIDATE — Domain & subdomain integrity check"
-        ALLOWED_DOMAINS=("Engineer" "TechLead" "Entrepreneur" "Self-care" "Family" "Meta")
-        echo "  Allowed domains: ${ALLOWED_DOMAINS[*]}"
+        # Use VALID_DOMAINS string from vault-config (bash 3.2: no array export)
+        ALLOWED_DOMAINS="${VALID_DOMAINS:-Engineer TechLead Entrepreneur Self-care Family Meta}"
+        echo "  Allowed domains: $ALLOWED_DOMAINS"
         echo ""
 
         violations=0
         unrecognized=0
         total=0
+        _tmp_pages=$(mktemp)
+        find "$WIKI_ROOT/wiki" -name "*.md"             ! -path "*/updates/*" ! -name "index.md"             | sed "s|$WIKI_ROOT/||" | sort > "$_tmp_pages"
 
-        # Check 1: no pages outside allowed domains (skip system dirs)
-        SYSTEM_DIRS=("decisions" "synthesis" "graph" "templates" "compiled" "updates")
+        # Check 1: no pages outside allowed domains
         echo "  Checking domain integrity..."
         while IFS= read -r page; do
             domain=$(echo "$page" | cut -d/ -f2)
             # Skip system directories
-            skip=false
-            for s in "${SYSTEM_DIRS[@]}"; do
-                [[ "$domain" == "$s" ]] && skip=true && break
-            done
-            $skip && continue
-            # Check against allowed domains
+            case "$domain" in
+                decisions|synthesis|graph|templates|compiled|updates) continue ;;
+            esac
             valid=false
-            for d in "${ALLOWED_DOMAINS[@]}"; do
-                [[ "$domain" == "$d" ]] && valid=true && break
+            for d in $ALLOWED_DOMAINS; do
+                [ "$domain" = "$d" ] && valid=true && break
             done
-            if ! $valid; then
+            if [ "$valid" = "false" ]; then
                 echo "  ❌ Unknown domain: $domain  ($page)"
                 violations=$(( violations + 1 ))
             fi
             total=$(( total + 1 ))
-        done < <(find "$WIKI_ROOT/wiki" -name "*.md" \
-            ! -path "*/updates/*" ! -name "index.md" \
-            | sed "s|$WIKI_ROOT/||" | sort)
+        done < "$_tmp_pages"
+        rm -f "$_tmp_pages"
 
         # Check 2: count Unrecognized pages
         echo ""
         echo "  Unrecognized subdomain contents:"
-        for d in "${ALLOWED_DOMAINS[@]}"; do
+        for d in $ALLOWED_DOMAINS; do
             undir="$WIKI_ROOT/wiki/$d/Unrecognized"
-            if [[ -d "$undir" ]]; then
+            if [ -d "$undir" ]; then
                 count=$(find "$undir" -name "*.md" | wc -l | tr -d ' ')
                 unrecognized=$(( unrecognized + count ))
                 echo "    $d/Unrecognized: $count pages"
             fi
         done
-        [[ $unrecognized -eq 0 ]] && echo "    (none)"
+        [ "$unrecognized" -eq 0 ] && echo "    (none)"
 
         echo ""
         echo "  ────────────────────────────────────────────────"
         printf "  Total pages checked: %d\n" "$total"
-        if [[ $violations -eq 0 ]]; then
+        if [ "$violations" -eq 0 ]; then
             echo "  ✅ All pages are in valid domains"
         else
             echo "  ❌ $violations domain violations found"
         fi
-        [[ $unrecognized -gt 0 ]] && \
-            echo "  ℹ️  $unrecognized pages in Unrecognized — review with: orchestrator.sh unrecognized"
+        [ "$unrecognized" -gt 0 ] &&             echo "  ℹ️  $unrecognized pages in Unrecognized — review with: orchestrator.sh unrecognized"
         echo "  ────────────────────────────────────────────────"
         ;;
 
     unrecognized)
         print_banner "UNRECOGNIZED — Pages needing subdomain assignment"
-        ALLOWED_DOMAINS=("Engineer" "TechLead" "Entrepreneur" "Self-care" "Family" "Meta")
+        ALLOWED_DOMAINS="${VALID_DOMAINS:-Engineer TechLead Entrepreneur Self-care Family Meta}"
         found=0
-        for d in "${ALLOWED_DOMAINS[@]}"; do
+        for d in $ALLOWED_DOMAINS; do
             undir="$WIKI_ROOT/wiki/$d/Unrecognized"
-            [[ -d "$undir" ]] || continue
-            pages=( "$undir"/*.md )
-            [[ -f "${pages[0]}" ]] || continue
+            [ -d "$undir" ] || continue
+            page_count=$(find "$undir" -name "*.md" | wc -l | tr -d ' ')
+            [ "$page_count" -eq 0 ] && continue
             echo ""
-            echo "  $d/Unrecognized (${#pages[@]} pages):"
-            for p in "${pages[@]}"; do
+            echo "  $d/Unrecognized ($page_count pages):"
+            while IFS= read -r p; do
                 tags=$(grep "^tags:" "$p" 2>/dev/null | head -1 | sed 's/tags: //')
                 printf "    %-45s  %s\n" "$(basename "$p" .md)" "$tags"
-            done
-            found=$(( found + ${#pages[@]} ))
+                found=$(( found + 1 ))
+            done < <(find "$undir" -name "*.md" | sort)
         done
         echo ""
-        [[ $found -eq 0 ]] && echo "  ✅ No unrecognized pages" || \
-            echo "  Total: $found pages waiting for subdomain assignment"
+        [ "$found" -eq 0 ] && echo "  ✅ No unrecognized pages" ||             echo "  Total: $found pages waiting for subdomain assignment"
         ;;
 
 
