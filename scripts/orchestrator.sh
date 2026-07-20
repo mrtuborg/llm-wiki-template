@@ -72,12 +72,12 @@ check_prerequisites() {
         ok=false
     fi
 
-    if [[ ! -f "$CONFIG" ]]; then
-        echo "❌ Config not found: $CONFIG"
+    if [[ ! -f "$WIKI_ROOT/vault.config.yaml" ]]; then
+        echo "❌ Config not found: $WIKI_ROOT/vault.config.yaml"
         ok=false
     fi
 
-    if [[ ${#ACTIVE_SOURCES[@]:-0} -eq 0 && ! -f "$TRACKING_DIR/sources.json" ]]; then
+    if [[ ! -f "$TRACKING_DIR/sources.json" ]]; then
         echo "❌ No sources configured. Run: ./llm-wiki source add /path/to/raw"
         ok=false
     fi
