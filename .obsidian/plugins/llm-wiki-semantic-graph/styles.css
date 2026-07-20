@@ -138,6 +138,34 @@
 }
 .llm-graph-sidebar--open { display: flex; }
 
+/* Semantic sidebar — left side */
+.llm-graph-sem-sidebar {
+  display: none;
+  flex-direction: column;
+  width: 260px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.llm-graph-sem-sidebar--open { display: flex; }
+
+/* Semantic sidebar rows */
+.llm-sb-muted { font-size: 10px; color: var(--text-muted); padding: 2px 0 6px; line-height: 1.4; }
+.llm-sb-outlier-domain { font-size: 10px; font-weight: 600; color: var(--text-muted); padding: 4px 0 1px; }
+.llm-sb-outlier-row {
+  display: flex; align-items: center; gap: 4px;
+  padding: 1px 0; font-size: 10px;
+}
+.llm-sb-outlier-sim { color: var(--text-muted); min-width: 30px; font-family: var(--font-monospace, monospace); }
+.llm-sb-outlier-name { color: var(--text-accent); cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.llm-sb-miss-row {
+  display: flex; align-items: center; gap: 3px;
+  padding: 2px 0; font-size: 10px; flex-wrap: nowrap;
+}
+.llm-sb-miss-name { color: var(--text-accent); cursor: pointer; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 .llm-sb-section {
   padding: 10px 10px 4px;
   border-bottom: 1px solid var(--background-modifier-border);
