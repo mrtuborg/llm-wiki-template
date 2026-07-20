@@ -27,7 +27,12 @@
    - List domains with >10 pages but no synthesis page
    - Report as candidates for Stage 8
 
-6. **Write stage output** to `pipeline/stage-output/current-7-compilation.md`:
+6. **Regenerate compiled graph** (so the Obsidian plugin sees new edges):
+   ```bash
+   cd {{WIKI_ROOT}} && python3 engine/tools/compile/update-graph.py
+   ```
+
+7. **Write stage output** to `pipeline/stage-output/current-7-compilation.md`:
    ```markdown
    # Maintain: Health Check — {{TIMESTAMP}}
    ## Dead links: N errors / OK
