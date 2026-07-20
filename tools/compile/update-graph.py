@@ -136,7 +136,47 @@ for a in slugs:
 print(f"  Auto from tag-overlap: {auto_added}")
 print(f"  Subdomain fallback: {subdomain_fallback}")
 
-# 4. Write new compiled graph.md
+# 4. Domain anchor fallback — connect any still-orphaned page to its domain hub
+# Guarantees every page with a known domain has at least 1 edge
+DOMAIN_ANCHORS = {
+    "Engineer":     "embedded-linux-overview",
+    "Self-care":    "personal-life-overview",
+    "TechLead":     "career-professional-overview",
+    "Entrepreneur": "entrepreneurship-overview",
+    "Family":       "norwegian-life-overview",
+    "Meta":         "synthesis",
+}
+
+connected.update(e[0] for e in edges)
+connected.update(e[2] for e in edges)
+
+domain_anchor_added = 0
+for f in glob.glob(WIKI_DIR + "/**/*.md", recursive=True):
+    rel = f.replace(WIKI_DIR + "/", "")
+    if rel.split("/")[0] in SKIP_DIRS: continue
+    if os.path.basename(f) == "index.md": continue
+    slug = os.path.splitext(os.path.basename(f))[0]
+    if slug in connected: continue  # already has edges
+
+    content = open(f, encoding="utf-8", errors="replace").read()
+    fm = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
+    if not fm: continue
+    m = re.search(r'domain:\s*(\S+)', fm.group(1))
+    if not m: continue
+    domain = m.group(1).strip('"\'')
+    anchor = DOMAIN_ANCHORS.get(domain)
+    if not anchor or anchor == slug: continue
+
+    key = tuple(sorted([slug, anchor]))
+    if key not in seen_edges:
+        edges.append((key[0], "Overview→Concept", key[1], "domain-member"))
+        seen_edges.add(key)
+        connected.add(slug)
+        domain_anchor_added += 1
+
+print(f"  Domain anchor fallback: {domain_anchor_added}")
+
+# 5. Write new compiled graph.md
 ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 out_path = os.path.join(GRAPH_DIR, f"{ts}-graph.md")
 os.makedirs(GRAPH_DIR, exist_ok=True)
