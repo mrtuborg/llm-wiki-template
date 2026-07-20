@@ -68,10 +68,11 @@ while true; do
     echo "  📋 Pending: $pending  |  Queued: $queued  |  Loop $LOOP/$MAX_LOOPS"
 
     # Stage: scan (if needed — enqueues files into queue.json)
+    # Pure script — no LLM, reads sources.json reliably
     if [[ $((pending + queued)) -gt 0 && $queued -eq 0 ]]; then
         echo ""
         echo "▶ Scan: finding files to queue..."
-        "$SCRIPT_DIR/run-stage.sh" "add-scan" "$BATCH_ID" "$BATCH_SIZE"
+        bash "$SCRIPT_DIR/scan-sources.sh" "$BATCH_ID" "$BATCH_SIZE"
     fi
 
     # Stage 5: Reconstruction

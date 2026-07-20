@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# scan-sources.sh — Pure bash/Python scan of registered sources into queue.json
+# No LLM involved. Called from mode-add.sh instead of run-stage.sh add-scan.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+WIKI_ROOT="${WIKI_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+BATCH_ID="${1:-batch-$(date -u +%Y%m%dT%H%M%SZ)}"
+BATCH_SIZE="${2:-3}"
+
+SOURCES_JSON="$WIKI_ROOT/pipeline/tracking/sources.json"
+PROGRESS_JSON="$WIKI_ROOT/pipeline/tracking/progress.json"
+QUEUE_JSON="$WIKI_ROOT/pipeline/tracking/queue.json"
+STAGE_OUT="$WIKI_ROOT/pipeline/stage-output/current-add-scan.md"
+
+python3 - "$WIKI_ROOT" "$SOURCES_JSON" "$PROGRESS_JSON" "$QUEUE_JSON" "$STAGE_OUT" "$BATCH_ID" "$BATCH_SIZE" << 'PYEOF'
+import json, os, sys, glob
+
+wiki_root, sources_f, progress_f, queue_f, stage_out, batch_id, batch_size = sys.argv[1:]
+batch_size = int(batch_size)
+
+sources = json.load(open(sources_f)).get("sources", [])
+progress = json.load(open(progress_f))
+if "sources" not in progress:
+    progress["sources"] = {}
+
+# Exclusion patterns (always skip these)
+ALWAYS_SKIP = {".trash", ".obsidian", ".git", "node_modules"}
+
+# Check if queue already has items
+queued_count = sum(1 for v in progress["sources"].values() if v.get("status") == "queued")
+if queued_count > 0:
+    print(f"  Queue already has {queued_count} files — skipping rescan")
+    batch_files = [k for k, v in progress["sources"].items() if v.get("status") == "queued"][:batch_size]
+else:
+    # Scan all active sources
+    newly_queued = 0
+    for src in sources:
+        if not src.get("active", True):
+            continue
+        src_path = os.path.expanduser(src["path"])
+        src_exclude = set(src.get("exclude", [])) | ALWAYS_SKIP
+        
+        for f in glob.glob(src_path + "/**/*.md", recursive=True):
+            # Check exclusions
+            parts = f.replace(src_path, "").split(os.sep)
+            if any(p in src_exclude for p in parts):
+                continue
+            
+            # Relative key for tracking
+            key = os.path.relpath(f, os.path.expanduser("~"))
+            key = "vaults/" + "/".join(key.split("/")[1:]) if key.startswith("vaults/") else key
+            
+            existing = progress["sources"].get(key, {})
+            if existing.get("status") not in ("done", "compiled", "ingested", "reconstructed", "skipped", "queued"):
+                progress["sources"][key] = {"status": "queued", "path": f}
+                newly_queued += 1
+    
+    print(f"  Newly queued: {newly_queued}")
+    batch_files = [k for k, v in progress["sources"].items() if v.get("status") == "queued"][:batch_size]
+
+# Write updated progress
+json.dump(progress, open(progress_f, "w"), indent=2)
+
+# Write queue.json
+pending = sum(1 for v in progress["sources"].values() if v.get("status") == "pending")
+total_queued = sum(1 for v in progress["sources"].values() if v.get("status") == "queued")
+batch_paths = [progress["sources"][k]["path"] for k in batch_files if "path" in progress["sources"].get(k, {})]
+
+queue = {
+    "batch_id": batch_id,
+    "files": batch_paths,
+    "total_queued": total_queued,
+    "total_pending": pending
+}
+json.dump(queue, open(queue_f, "w"), indent=2)
+
+# Write stage output
+with open(stage_out, "w") as fh:
+    fh.write(f"# Scan Results — {batch_id}\n")
+    fh.write(f"- Sources scanned: {len(sources)}\n")
+    fh.write(f"- Files in this batch: {len(batch_paths)}\n")
+    fh.write(f"- Total queued: {total_queued}\n")
+    fh.write(f"- Total pending: {pending}\n\n")
+    fh.write("## Batch files\n")
+    for p in batch_paths:
+        fh.write(f"- {p}\n")
+
+print(f"  Batch: {len(batch_paths)} files → {queue_f}")
+PYEOF
