@@ -133,7 +133,9 @@ def upsert(db: sqlite3.Connection, rel_path: str, h: str, vec: list):
     if row:
         rowid = row[0]
         db.execute("UPDATE pages SET hash=?, updated_at=? WHERE rowid=?", (h, now, rowid))
-        db.execute("INSERT OR REPLACE INTO vec_items(rowid, embedding) VALUES (?,?)",
+        # sqlite-vec virtual tables don't support INSERT OR REPLACE — delete then insert
+        db.execute("DELETE FROM vec_items WHERE rowid=?", (rowid,))
+        db.execute("INSERT INTO vec_items(rowid, embedding) VALUES (?,?)",
                    (rowid, serialize(vec)))
     else:
         cur = db.execute("INSERT INTO pages(path,hash,updated_at) VALUES (?,?,?)",
