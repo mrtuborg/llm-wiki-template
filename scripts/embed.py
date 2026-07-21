@@ -208,6 +208,7 @@ def main():
             embedded += 1
         except Exception as e:
             errors += 1
+            print(f"\n  ⚠️  error on {rel}: {e}", file=sys.stderr)
 
     elapsed = time.time() - t0
     total_indexed = db.execute("SELECT COUNT(*) FROM pages").fetchone()[0]
