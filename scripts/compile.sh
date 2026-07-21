@@ -145,9 +145,12 @@ print(d['stats'].get('total', 0))
 PYEOF
 )
 
-printf '# Stage 7 Output — %s (shell compile)\n## Dead link check\n%s\n\n## Index updated\n- See wiki/index.md\n\n## Registry updated\n- See pipeline/sources-registry.md\n\n## Synthesis trigger\n- Total pages: %s\n- Synthesis threshold (min 5): %s\n' \
-    "$NOW_LOCAL" "$DEAD_RESULT" "$TOTAL_PAGES" \
-    "$([ "${TOTAL_PAGES:-0}" -ge 5 ] && echo YES || echo NO)" > "$STAGE_OUT"
+# Count wiki pages modified in the last 10 minutes (= this batch's new pages)
+NEW_PAGES=$(find "$WIKI_DIR" -name '*.md' -newer "$PROGRESS_FILE" -not -path '*/graph/*' -not -path '*/updates/*' -not -path '*/templates/*' -not -path '*/decisions/*' 2>/dev/null | wc -l | tr -d ' ')
+
+printf '# Stage 7 Output — %s (shell compile)\n## Dead link check\n%s\n\n## Index updated\n- See wiki/index.md\n\n## Registry updated\n- See pipeline/sources-registry.md\n\n## Synthesis trigger\n- New pages this batch: %s\n- Total pages: %s\n- Synthesis threshold (min 5 new pages): %s\n' \
+    "$NOW_LOCAL" "$DEAD_RESULT" "$NEW_PAGES" "$TOTAL_PAGES" \
+    "$([ "${NEW_PAGES:-0}" -ge 5 ] && echo YES || echo NO)" > "$STAGE_OUT"
 
 echo "[compile] Stage output written"
 echo "[compile] ✅ Done"

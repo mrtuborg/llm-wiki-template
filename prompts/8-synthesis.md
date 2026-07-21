@@ -52,8 +52,8 @@ If threshold IS met:
    - [[wiki/Domain/page]] — summary
    ```
    
-   > ⚠️ `domain:` must be EXACTLY one of: Engineer / TechLead / Entrepreneur / Self-care / Family / Meta
-   > Use `Meta` for cross-cutting synthesis. NEVER use `cross-domain`, `synthesis`, or old domain names.
+   > ⚠️ `domain:` must be EXACTLY one of the domains listed in `vault.config.yaml` (see `_context.md`).
+   > Use `Meta` for cross-cutting synthesis. NEVER use `cross-domain`, `synthesis`, or invented domain names.
 
 4. **Write stage output** to `pipeline/stage-output/current-8-synthesis.md`:
    ```markdown
