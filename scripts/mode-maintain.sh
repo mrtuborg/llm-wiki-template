@@ -36,10 +36,11 @@ tracker_summary
 
 BATCH_ID="maintain-$(date -u +%Y%m%dT%H%M%SZ)"
 
-# Stage 7: Health check + index update
+# Stage 7: Health check + shell compile (index, registry, stats)
 echo ""
 echo "▶ Stage 7: Health Check + Compilation..."
 "$SCRIPT_DIR/run-stage.sh" "maintain-health" "$BATCH_ID"
+bash "$SCRIPT_DIR/compile.sh" "$BATCH_ID"
 
 # Optional synthesis
 # Stage 6b: Link Enrichment (always — reduces orphaned pages)

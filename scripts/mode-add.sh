@@ -137,15 +137,14 @@ while true; do
     echo "▶ Stage 6c: Deduplication..."
     "$SCRIPT_DIR/run-stage.sh" "6c-dedup" "$BATCH_ID"
 
-    # Stage 7: Compilation
+    # Stage 7: Compilation (shell — index, registry, stats; LLM only for dead-link fixes)
     echo ""
-    echo "▶ Stage 7: Compilation..."
-    "$SCRIPT_DIR/run-stage.sh" "7-compilation" "$BATCH_ID" "$BATCH_SIZE"
-    # Auto-promote: ingested → compiled (shell, not LLM)
+    echo "▶ Stage 7: Compilation (shell)..."
+    bash "$SCRIPT_DIR/compile.sh" "$BATCH_ID"
+    # Auto-promote: ingested → compiled → done
     while IFS= read -r key; do
         tracker_set_status "$key" "compiled"
     done < <(tracker_list ingested)
-    # Auto-promote: compiled → done
     while IFS= read -r key; do
         tracker_mark_done "$key"
     done < <(tracker_list compiled)
