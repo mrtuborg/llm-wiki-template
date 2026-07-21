@@ -2,6 +2,10 @@
 
 > **Edge type rule:** Use ONLY: `relates-to` · `defines` · `constrains` · `participates-in` · `instance-of` · `depends-on` · `follows` · `summarizes` · `part-of` · `specializes` — never invent new types.
 
+> **Shell rule:** Do NOT write multi-line shell scripts or heredocs. Use individual Read / Edit / Create tool calls for each file. Only run simple one-liner bash commands.
+
+> **Tracking rule:** Do NOT update `pipeline/tracking/progress.json` — status promotion is handled automatically by the pipeline engine after this stage completes. Only write wiki pages and `pipeline/stage-output/current-6-ingestion.md`.
+
 
 {{SHARED_CONTEXT}}
 

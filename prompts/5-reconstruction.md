@@ -1,5 +1,9 @@
 ## Pipeline Stage 5: Reconstruction
 
+> **Shell rule:** Do NOT write multi-line shell scripts or heredocs. Use individual Read / Edit / Create tool calls. Only run simple one-liner bash commands.
+
+> **Tracking rule:** Do NOT update `pipeline/tracking/progress.json` — status is managed automatically by the pipeline engine.
+
 {{SHARED_CONTEXT}}
 
 ### Input

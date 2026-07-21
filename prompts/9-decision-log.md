@@ -2,7 +2,9 @@
 
 > **Edge type rule:** Use ONLY: `relates-to` · `defines` · `constrains` · `participates-in` · `instance-of` · `depends-on` · `follows` · `summarizes` · `part-of` · `specializes` — never invent new types.
 
-> **Shell rule:** Do NOT write multi-line shell scripts to update files. Use individual Read / Edit / Create tool calls for each file. Only run simple one-liner bash commands. Never use `set -euo pipefail`, heredocs, or `${VAR}` variable assignments in shell commands.
+> **Shell rule:** Do NOT write multi-line shell scripts or heredocs. Use individual Read / Edit / Create tool calls. Only run simple one-liner bash commands. Never use `set -euo pipefail` or `${VAR}` assignments.
+
+> **Tracking rule:** Do NOT update `pipeline/tracking/progress.json` — status is managed automatically by the pipeline engine.
 
 
 > **File rule:** Stage output files (`pipeline/stage-output/current-*.md`) already exist — always **overwrite** them, never try to create.
