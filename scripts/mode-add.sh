@@ -136,10 +136,26 @@ while true; do
     echo "▶ Stage 6c: Deduplication..."
     "$SCRIPT_DIR/run-stage.sh" "6c-dedup" "$BATCH_ID"
 
+    # Count wiki pages created by stage 6 for this batch (before compile.sh overwrites progress.json)
+    _wiki_before=$(find "$WIKI_ROOT/wiki" -name '*.md' -not -path '*/graph/*' -not -path '*/updates/*' -not -path '*/templates/*' -not -path '*/decisions/*' 2>/dev/null | wc -l | tr -d ' ')
+
     # Stage 7: Compilation (shell — index, registry, stats; LLM only for dead-link fixes)
     echo ""
     echo "▶ Stage 7: Compilation (shell)..."
     bash "$SCRIPT_DIR/compile.sh" "$BATCH_ID"
+
+    # Record how many new pages were added by this batch (used by compile.sh for synthesis trigger)
+    _wiki_after=$(find "$WIKI_ROOT/wiki" -name '*.md' -not -path '*/graph/*' -not -path '*/updates/*' -not -path '*/templates/*' -not -path '*/decisions/*' 2>/dev/null | wc -l | tr -d ' ')
+    _new_pages=$(( _wiki_after - _wiki_before ))
+    python3 - "$PROGRESS_FILE" "$_new_pages" << 'PYEOF'
+import json, sys
+f, n = sys.argv[1], int(sys.argv[2])
+d = json.load(open(f))
+d['batch_new_pages'] = n
+with open(f, 'w') as fh:
+    json.dump(d, fh, indent=2)
+PYEOF
+
     # Promote only batch keys: ingested → compiled → done
     while IFS= read -r key; do
         tracker_set_status "$key" "compiled"
