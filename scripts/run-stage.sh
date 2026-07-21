@@ -38,6 +38,10 @@ echo ""
 prompt_file=$(build_prompt "$STAGE" "$BATCH_ID" "$BATCH_SIZE")
 echo "[run-stage] Prompt: $prompt_file ($(wc -c < "$prompt_file") bytes)"
 
+# Remove previous stage output so agent always Creates fresh (avoids Edit "No match found")
+STAGE_OUT_FILE="${STAGE_OUTPUT_DIR:-$WIKI_ROOT/pipeline/stage-output}/current-${STAGE}.md"
+rm -f "$STAGE_OUT_FILE"
+
 # Build --add-dir flags: wiki root + all active sources
 SOURCES_FILE="${TRACKING_DIR:-$WIKI_ROOT/pipeline/tracking}/sources.json"
 _tmp_dirs=$(mktemp)

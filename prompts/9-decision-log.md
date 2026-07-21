@@ -7,7 +7,7 @@
 > **Tracking rule:** Do NOT update `pipeline/tracking/progress.json` — status is managed automatically by the pipeline engine.
 
 
-> **File rule:** Stage output files (`pipeline/stage-output/current-*.md`) already exist — always **overwrite** them, never try to create.
+> **File rule:** Stage output files (`pipeline/stage-output/current-*.md`) are deleted before each stage run — always **Create** them fresh, never Edit them.
 
 
 {{SHARED_CONTEXT}}

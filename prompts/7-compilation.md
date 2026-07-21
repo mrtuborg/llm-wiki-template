@@ -1,6 +1,6 @@
 ## Pipeline Stage 7: Compilation
 
-> **File rule:** Stage output files (`pipeline/stage-output/current-*.md`) already exist — always **overwrite** them, never try to create.
+> **File rule:** Stage output files (`pipeline/stage-output/current-*.md`) are deleted before each stage run — always **Create** them fresh, never Edit them.
 
 > **Shell rule:** Do NOT write multi-line shell scripts to update files. Use individual Read / Edit / Create tool calls for each file. Only run simple one-liner bash commands (e.g. `bash engine/tools/validate/check-dead-links.sh`). Never use `set -euo pipefail`, heredocs, or `${VAR}` variable assignments in shell commands.
 
