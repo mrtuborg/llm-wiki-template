@@ -209,6 +209,7 @@ def main():
             upsert(db, rel, h, vec)
             embedded += 1
         except Exception as e:
+            db.rollback()  # discard any partial writes from the failed upsert
             errors += 1
             print(f"\n  ⚠️  error on {rel}: {e}", file=sys.stderr)
 
