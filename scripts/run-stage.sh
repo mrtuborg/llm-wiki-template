@@ -38,9 +38,15 @@ echo ""
 prompt_file=$(build_prompt "$STAGE" "$BATCH_ID" "$BATCH_SIZE")
 echo "[run-stage] Prompt: $prompt_file ($(wc -c < "$prompt_file") bytes)"
 
-# Remove previous stage output so agent always Creates fresh (avoids Edit "No match found")
-STAGE_OUT_FILE="${STAGE_OUTPUT_DIR:-$WIKI_ROOT/pipeline/stage-output}/current-${STAGE}.md"
-rm -f "$STAGE_OUT_FILE"
+# Stage output path — agent writes here; we back up current and restore on failure
+_out_dir="${STAGE_OUTPUT_DIR:-$WIKI_ROOT/pipeline/stage-output}"
+STAGE_OUT_FILE="$_out_dir/current-${STAGE}.md"
+STAGE_OUT_BACKUP="$_out_dir/.bak-current-${STAGE}.md"
+
+# Back up existing output (safe handoff: previous run kept if agent fails)
+[ -f "$STAGE_OUT_FILE" ] && cp -f "$STAGE_OUT_FILE" "$STAGE_OUT_BACKUP"
+# Create empty placeholder so agent always uses Create (not Edit)
+: > "$STAGE_OUT_FILE"
 
 # Build --add-dir flags: wiki root + all active sources
 SOURCES_FILE="${TRACKING_DIR:-$WIKI_ROOT/pipeline/tracking}/sources.json"
@@ -74,23 +80,27 @@ gh copilot -- \
     --model "$PIPELINE_MODEL" \
     --allow-all-tools \
     --allow-all-paths \
-    $add_dir_args
+    $add_dir_args || true   # capture exit code below; -e is off in callers
 
 EXIT_CODE=$?
 
 echo ""
 if [ "$EXIT_CODE" -eq 0 ]; then
     echo "[run-stage] ✅ Stage $STAGE completed"
+    rm -f "$STAGE_OUT_BACKUP"   # clean up backup on success
 else
     echo "[run-stage] ❌ Stage $STAGE failed (exit $EXIT_CODE)"
-    mkdir -p "${STAGE_OUTPUT_DIR:-$WIKI_ROOT/pipeline/stage-output}/errors"
+    # Restore previous good output so downstream stages have valid context
+    [ -f "$STAGE_OUT_BACKUP" ] && mv -f "$STAGE_OUT_BACKUP" "$STAGE_OUT_FILE" && \
+        echo "[run-stage] ↩️  Stage output restored from backup"
+    mkdir -p "${_out_dir}/errors"
     {
         echo "# Stage Error -- $(date -u +%Y-%m-%dT%H:%M:%SZ)"
         echo "- Stage: $STAGE"
         echo "- Batch: $BATCH_ID"
         echo "- Exit code: $EXIT_CODE"
         echo "- Prompt: $prompt_file"
-    } >> "${STAGE_OUTPUT_DIR:-$WIKI_ROOT/pipeline/stage-output}/errors/$(date -u +%Y%m%dT%H%M%SZ)-${STAGE}.md"
+    } >> "${_out_dir}/errors/$(date -u +%Y%m%dT%H%M%SZ)-${STAGE}.md"
     exit "$EXIT_CODE"
 fi
 
