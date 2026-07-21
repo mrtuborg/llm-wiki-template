@@ -109,23 +109,22 @@ while true; do
         bash "$SCRIPT_DIR/scan-sources.sh" "$BATCH_ID" "$BATCH_SIZE"
     fi
 
-    # Stage 5: Reconstruction
+    # Stage 5: Reconstruction — snapshot queued keys first, promote only those
     echo ""
     echo "▶ Stage 5: Reconstruction..."
+    _batch_queued=$(tracker_list queued | head -"$BATCH_SIZE")
     "$SCRIPT_DIR/run-stage.sh" "5-reconstruction" "$BATCH_ID" "$BATCH_SIZE"
-    # Auto-promote: queued → reconstructed (shell, not LLM)
     while IFS= read -r key; do
         tracker_set_status "$key" "reconstructed"
-    done < <(tracker_list queued | head -"$BATCH_SIZE")
+    done <<< "$_batch_queued"
 
-    # Stage 6: Ingestion
+    # Stage 6: Ingestion — promote only the batch snapshotted above
     echo ""
     echo "▶ Stage 6: Ingestion..."
     "$SCRIPT_DIR/run-stage.sh" "6-ingestion" "$BATCH_ID" "$BATCH_SIZE"
-    # Auto-promote: reconstructed → ingested (shell, not LLM)
     while IFS= read -r key; do
         tracker_set_status "$key" "ingested"
-    done < <(tracker_list reconstructed)
+    done <<< "$_batch_queued"
 
     # Stage 6b: Link Enrichment
     echo ""
@@ -141,13 +140,13 @@ while true; do
     echo ""
     echo "▶ Stage 7: Compilation (shell)..."
     bash "$SCRIPT_DIR/compile.sh" "$BATCH_ID"
-    # Auto-promote: ingested → compiled → done
+    # Promote only batch keys: ingested → compiled → done
     while IFS= read -r key; do
         tracker_set_status "$key" "compiled"
-    done < <(tracker_list ingested)
+    done <<< "$_batch_queued"
     while IFS= read -r key; do
         tracker_mark_done "$key"
-    done < <(tracker_list compiled)
+    done <<< "$_batch_queued"
 
     # Stage 7b: Embedding (incremental — only new pages)
     echo ""

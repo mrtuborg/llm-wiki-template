@@ -35,7 +35,7 @@ domain_pages = defaultdict(list)
 for mdfile in sorted(WIKI_DIR.rglob('*.md')):
     rel = mdfile.relative_to(WIKI_DIR)
     parts = rel.parts
-    if not parts:
+    if len(parts) < 2:          # skip root-level files (index.md, etc.)
         continue
     domain = parts[0]
     if domain in SKIP:
@@ -138,10 +138,12 @@ if [[ -f "$WIKI_ROOT/engine/tools/validate/check-dead-links.sh" ]]; then
     DEAD_RESULT=$(bash "$WIKI_ROOT/engine/tools/validate/check-dead-links.sh" 2>&1 | tail -3) || true
 fi
 
-TOTAL_PAGES=$(python3 -c "
-import json; d=json.load(open('$PROGRESS_FILE'))
-print(d['stats'].get('total',0))
-")
+TOTAL_PAGES=$(python3 - "$PROGRESS_FILE" << 'PYEOF'
+import json, sys
+d = json.load(open(sys.argv[1]))
+print(d['stats'].get('total', 0))
+PYEOF
+)
 
 printf '# Stage 7 Output — %s (shell compile)\n## Dead link check\n%s\n\n## Index updated\n- See wiki/index.md\n\n## Registry updated\n- See pipeline/sources-registry.md\n\n## Synthesis trigger\n- Total pages: %s\n- Synthesis threshold (min 5): %s\n' \
     "$NOW_LOCAL" "$DEAD_RESULT" "$TOTAL_PAGES" \
