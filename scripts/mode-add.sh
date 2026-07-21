@@ -113,11 +113,19 @@ while true; do
     echo ""
     echo "▶ Stage 5: Reconstruction..."
     "$SCRIPT_DIR/run-stage.sh" "5-reconstruction" "$BATCH_ID" "$BATCH_SIZE"
+    # Auto-promote: queued → reconstructed (shell, not LLM)
+    while IFS= read -r key; do
+        tracker_set_status "$key" "reconstructed"
+    done < <(tracker_list queued | head -"$BATCH_SIZE")
 
     # Stage 6: Ingestion
     echo ""
     echo "▶ Stage 6: Ingestion..."
     "$SCRIPT_DIR/run-stage.sh" "6-ingestion" "$BATCH_ID" "$BATCH_SIZE"
+    # Auto-promote: reconstructed → ingested (shell, not LLM)
+    while IFS= read -r key; do
+        tracker_set_status "$key" "ingested"
+    done < <(tracker_list reconstructed)
 
     # Stage 6b: Link Enrichment
     echo ""
@@ -133,6 +141,14 @@ while true; do
     echo ""
     echo "▶ Stage 7: Compilation..."
     "$SCRIPT_DIR/run-stage.sh" "7-compilation" "$BATCH_ID" "$BATCH_SIZE"
+    # Auto-promote: ingested → compiled (shell, not LLM)
+    while IFS= read -r key; do
+        tracker_set_status "$key" "compiled"
+    done < <(tracker_list ingested)
+    # Auto-promote: compiled → done
+    while IFS= read -r key; do
+        tracker_mark_done "$key"
+    done < <(tracker_list compiled)
 
     # Stage 7b: Embedding (incremental — only new pages)
     echo ""
