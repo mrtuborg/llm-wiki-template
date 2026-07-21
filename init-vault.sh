@@ -39,6 +39,28 @@ mkdir -p "$VAULT_ROOT/pipeline/reconstructed"
 mkdir -p "$VAULT_ROOT/pipeline/stage-output"
 mkdir -p "$VAULT_ROOT/pipeline/stage-output/errors"
 mkdir -p "$VAULT_ROOT/pipeline/prompts"
+
+# Generate _context.md with vault-specific facts for LLM agents
+cat > "$VAULT_ROOT/pipeline/prompts/_context.md" << CONTEXT_EOF
+# Vault Context — $(basename "$VAULT_ROOT")
+
+## Paths
+- WIKI_ROOT: $VAULT_ROOT
+- Wiki pages: $VAULT_ROOT/wiki/
+- Pipeline tracking: $VAULT_ROOT/pipeline/tracking/
+
+## progress.json key format
+Keys in progress.json \`sources\` are **relative to \$HOME** (not absolute paths).
+Example: \`vaults/Sensio-Sources/build-pipeline/AGENTS.md\`
+NOT: \`/Users/vn/vaults/Sensio-Sources/build-pipeline/AGENTS.md\`
+
+When searching progress.json, always use the relative key format.
+To convert: strip the \$HOME prefix and leading slash from any absolute path.
+
+## Domains
+$(grep -A20 "^wiki:" "$VAULT_ROOT/vault.config.yaml" 2>/dev/null | grep "^    - " | sed 's/^    - /- /' || echo "- (see vault.config.yaml)")
+CONTEXT_EOF
+echo "✓ pipeline/prompts/_context.md generated"
 mkdir -p "$VAULT_ROOT/pipeline/handoff/provenance"
 mkdir -p "$VAULT_ROOT/pipeline/errors"
 mkdir -p "$VAULT_ROOT/domains"
