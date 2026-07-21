@@ -2,7 +2,7 @@
 # mode-maintain.sh — MAINTAIN mode: health check, index sync, synthesis
 # Usage: ./mode-maintain.sh [--synthesis]
 
-set -euo pipefail
+set -uo pipefail   # no -e: LLM stages may fail transiently; pipeline must continue
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WIKI_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"

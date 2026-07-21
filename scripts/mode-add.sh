@@ -2,7 +2,7 @@
 # mode-add.sh — ADD mode: ingest new source files into wiki
 # Usage: ./mode-add.sh [--batch-size N] [--max-loops N] [--once]
 
-set -euo pipefail
+set -uo pipefail   # no -e: LLM stages may fail transiently; pipeline must continue
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WIKI_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
