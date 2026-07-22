@@ -121,6 +121,13 @@ while true; do
     # Stage 6: Ingestion — promote only the batch snapshotted above
     echo ""
     echo "▶ Stage 6: Ingestion..."
+    # Snapshot page count BEFORE ingestion — this batch's new pages are created by
+    # stage 6/6b/6c, not stage 7 (compile.sh only rebuilds index.md/registry, it
+    # never adds content pages). Snapshotting after 6c (as before) always measured
+    # a ~0 delta across stage 7 alone, so the synthesis threshold could never be
+    # met — Stage 8 was structurally unreachable regardless of how many pages a
+    # batch actually created.
+    _wiki_before=$(find "$WIKI_ROOT/wiki" -name '*.md' -not -path '*/graph/*' -not -path '*/updates/*' -not -path '*/templates/*' -not -path '*/decisions/*' 2>/dev/null | wc -l | tr -d ' ')
     "$SCRIPT_DIR/run-stage.sh" "6-ingestion" "$BATCH_ID" "$BATCH_SIZE"
     while IFS= read -r key; do
         tracker_set_status "$key" "ingested"
@@ -136,15 +143,13 @@ while true; do
     echo "▶ Stage 6c: Deduplication..."
     "$SCRIPT_DIR/run-stage.sh" "6c-dedup" "$BATCH_ID"
 
-    # Count wiki pages created by stage 6 for this batch (before compile.sh overwrites progress.json)
-    _wiki_before=$(find "$WIKI_ROOT/wiki" -name '*.md' -not -path '*/graph/*' -not -path '*/updates/*' -not -path '*/templates/*' -not -path '*/decisions/*' 2>/dev/null | wc -l | tr -d ' ')
-
     # Stage 7: Compilation (shell — index, registry, stats; LLM only for dead-link fixes)
     echo ""
     echo "▶ Stage 7: Compilation (shell)..."
     bash "$SCRIPT_DIR/compile.sh" "$BATCH_ID"
 
-    # Record how many new pages were added by this batch (used by compile.sh for synthesis trigger)
+    # Record how many new pages were added by this batch (ingestion through dedup)
+    # — used by compile.sh for the synthesis trigger
     _wiki_after=$(find "$WIKI_ROOT/wiki" -name '*.md' -not -path '*/graph/*' -not -path '*/updates/*' -not -path '*/templates/*' -not -path '*/decisions/*' 2>/dev/null | wc -l | tr -d ' ')
     _new_pages=$(( _wiki_after - _wiki_before ))
     python3 - "$PROGRESS_FILE" "$_new_pages" << 'PYEOF'
