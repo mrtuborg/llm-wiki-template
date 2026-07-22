@@ -48,6 +48,18 @@ STAGE_OUT_BACKUP="$_out_dir/.bak-current-${STAGE}.md"
 # Create empty placeholder so agent always uses Create (not Edit)
 : > "$STAGE_OUT_FILE"
 
+# Guard progress.json: agents must NEVER write it directly (shell/tracker.sh owns it).
+# Prompt rule alone is not enforced — an Edit-tool text patch against a stale read
+# of this file (while tracker.sh concurrently rewrites it) can splice two file
+# snapshots together and corrupt the JSON. Back it up + make read-only for the
+# duration of the agent turn so any write attempt fails loudly instead of silently.
+PROGRESS_FILE_GUARD="${TRACKING_DIR:-$WIKI_ROOT/pipeline/tracking}/progress.json"
+PROGRESS_FILE_BACKUP="${TRACKING_DIR:-$WIKI_ROOT/pipeline/tracking}/.bak-progress.json"
+if [ -f "$PROGRESS_FILE_GUARD" ]; then
+    cp -f "$PROGRESS_FILE_GUARD" "$PROGRESS_FILE_BACKUP"
+    chmod 444 "$PROGRESS_FILE_GUARD"
+fi
+
 # Build --add-dir flags: wiki root + all active sources
 SOURCES_FILE="${TRACKING_DIR:-$WIKI_ROOT/pipeline/tracking}/sources.json"
 _tmp_dirs=$(mktemp)
@@ -83,6 +95,20 @@ gh copilot -- \
     $add_dir_args || true   # capture exit code below; -e is off in callers
 
 EXIT_CODE=$?
+
+# Restore write access to progress.json regardless of outcome — shell (tracker.sh)
+# needs it writable for the status promotions that follow this stage.
+if [ -f "$PROGRESS_FILE_GUARD" ]; then
+    chmod 644 "$PROGRESS_FILE_GUARD"
+    if jq empty "$PROGRESS_FILE_GUARD" 2>/dev/null; then
+        rm -f "$PROGRESS_FILE_BACKUP"   # valid JSON — safe to drop the backup
+    else
+        echo "[run-stage] ⚠️  progress.json is invalid JSON after stage $STAGE — restoring backup"
+        echo "[run-stage] ⚠️  This means the agent wrote to progress.json despite the Tracking rule."
+        [ -f "$PROGRESS_FILE_BACKUP" ] && mv -f "$PROGRESS_FILE_BACKUP" "$PROGRESS_FILE_GUARD" && \
+            echo "[run-stage] ↩️  progress.json restored from backup"
+    fi
+fi
 
 echo ""
 if [ "$EXIT_CODE" -eq 0 ]; then
