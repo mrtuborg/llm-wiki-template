@@ -69,8 +69,16 @@ PROGRESS_FILE_BACKUP="${TRACKING_DIR:-$WIKI_ROOT/pipeline/tracking}/.bak-progres
 # trap ensures write access is restored even if this script is interrupted
 # (SIGINT/SIGTERM) while progress.json is chmod 444. SIGKILL can't be trapped —
 # the self-heal above is what recovers from that case on the next run.
-_restore_progress_perms() { [ -f "$PROGRESS_FILE_GUARD" ] && chmod 644 "$PROGRESS_FILE_GUARD" 2>/dev/null; }
-trap _restore_progress_perms EXIT INT TERM
+# Also restores the stage-output backup on interrupt: STAGE_OUT_FILE was rm'd
+# above and only gets recreated if the agent's Create call succeeds, so a
+# Ctrl-C mid-turn would otherwise leave that stage's output permanently missing
+# with no recovery path (mv is idempotent — no-op once the normal success/failure
+# path has already consumed the backup).
+_restore_on_interrupt() {
+    [ -f "$PROGRESS_FILE_GUARD" ] && chmod 644 "$PROGRESS_FILE_GUARD" 2>/dev/null
+    [ -f "$STAGE_OUT_BACKUP" ] && mv -f "$STAGE_OUT_BACKUP" "$STAGE_OUT_FILE" 2>/dev/null
+}
+trap _restore_on_interrupt EXIT INT TERM
 
 if [ -f "$PROGRESS_FILE_GUARD" ]; then
     cp -f "$PROGRESS_FILE_GUARD" "$PROGRESS_FILE_BACKUP"
@@ -104,14 +112,20 @@ echo "[run-stage] Launching gh copilot..."
 echo ""
 
 # shellcheck disable=SC2086
-gh copilot -- \
+# Note: run-stage.sh has 'set -e' — must guard this call with if/then so a
+# non-zero exit doesn't abort the script before the cleanup/restore logic below
+# runs. (A prior '|| true' here always forced EXIT_CODE=0, silently disabling
+# the entire failure/restore branch — fixed by capturing the real exit code.)
+if gh copilot -- \
     -p "$(cat "$prompt_file")" \
     --model "$PIPELINE_MODEL" \
     --allow-all-tools \
     --allow-all-paths \
-    $add_dir_args || true   # capture exit code below; -e is off in callers
-
-EXIT_CODE=$?
+    $add_dir_args; then
+    EXIT_CODE=0
+else
+    EXIT_CODE=$?
+fi
 
 # Restore write access to progress.json regardless of outcome — shell (tracker.sh)
 # needs it writable for the status promotions that follow this stage.
@@ -144,6 +158,17 @@ elif [ -f "$PROGRESS_FILE_BACKUP" ]; then
 fi
 
 echo ""
+# Treat a missing/empty stage output the same as a hard failure — the agent
+# exiting 0 doesn't guarantee it actually wrote to STAGE_OUT_FILE (wrong path,
+# an internal tool error it silently recovered from, etc). Since this file is
+# now rm'd (not truncated) before the run, "missing" is a real failure signal,
+# not just an empty placeholder — and every downstream stage prompt reads this
+# exact path as its stated Input, so a silent gap here breaks the next stage.
+if [ "$EXIT_CODE" -eq 0 ] && [ ! -s "$STAGE_OUT_FILE" ]; then
+    echo "[run-stage] ⚠️  Stage $STAGE exited 0 but produced no stage output file"
+    EXIT_CODE=1
+fi
+
 if [ "$EXIT_CODE" -eq 0 ]; then
     echo "[run-stage] ✅ Stage $STAGE completed"
     rm -f "$STAGE_OUT_BACKUP"   # clean up backup on success
