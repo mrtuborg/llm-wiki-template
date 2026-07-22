@@ -45,8 +45,12 @@ STAGE_OUT_BACKUP="$_out_dir/.bak-current-${STAGE}.md"
 
 # Back up existing output (safe handoff: previous run kept if agent fails)
 [ -f "$STAGE_OUT_FILE" ] && cp -f "$STAGE_OUT_FILE" "$STAGE_OUT_BACKUP"
-# Create empty placeholder so agent always uses Create (not Edit)
-: > "$STAGE_OUT_FILE"
+# Remove (not truncate!) so the agent's Create tool succeeds on the first try.
+# Create refuses to write over ANY existing path, even a 0-byte file — truncating
+# with ': > file' left the path present and made "always Create fresh" impossible,
+# forcing agents into rm+Create workarounds. The backup above already preserves
+# the previous content, so removing here adds no extra corruption risk.
+rm -f "$STAGE_OUT_FILE"
 
 # Guard progress.json: agents must NEVER write it directly (shell/tracker.sh owns it).
 # Prompt rule alone is not enforced — an Edit-tool text patch against a stale read

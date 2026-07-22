@@ -2,6 +2,8 @@
 
 > **Shell rule:** Do NOT write multi-line shell scripts or heredocs. Use individual Read / Edit / Create tool calls. Only run simple one-liner bash commands.
 
+> **File rule:** Stage output files (`pipeline/stage-output/current-*.md`) are deleted before each stage run — always **Create** them fresh, never Edit them.
+
 > **Tracking rule:** Do NOT update `pipeline/tracking/progress.json` — status is managed automatically by the pipeline engine.
 
 {{SHARED_CONTEXT}}
