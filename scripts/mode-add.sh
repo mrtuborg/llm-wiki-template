@@ -125,15 +125,37 @@ while true; do
     # ingested → compiled → done without any stage ever actually processing
     # them. Regenerating queue.json here from _batch_queued guarantees the
     # agent's input and the promotion list can never diverge again.
-    printf '%s\n' "$_batch_queued" | python3 - "$PROGRESS_FILE" "$WIKI_ROOT" "$BATCH_ID" << 'PYEOF'
+    #
+    # Any key missing from progress.json or missing its "path" field (e.g. from
+    # a manual/out-of-band edit) is EXCLUDED from queue.json's files array — and
+    # must also be excluded from the promotion loop below, or that single key
+    # would get marked reconstructed/done without the agent ever seeing it in
+    # queue.json, reproducing this exact bug class at single-key scale. The
+    # python side prints only the valid keys to stdout so bash can promote
+    # precisely (and only) what was actually queued for the agent.
+    #
+    # NOTE: _batch_queued is passed as an argv string (not piped via stdin) —
+    # `python3 -` reads the script itself from stdin, so a heredoc script body
+    # combined with a stdin pipe of data would have the heredoc silently win,
+    # leaving the script's own sys.stdin already exhausted and empty by the
+    # time it tried to read the piped keys.
+    _batch_valid=$(python3 - "$PROGRESS_FILE" "$WIKI_ROOT" "$BATCH_ID" "$_batch_queued" << 'PYEOF'
 import json, sys
 
-progress_f, wiki_root, batch_id = sys.argv[1:4]
-keys = [line.strip() for line in sys.stdin if line.strip()]
+progress_f, wiki_root, batch_id, keys_raw = sys.argv[1:5]
+keys = [line.strip() for line in keys_raw.splitlines() if line.strip()]
 
 progress = json.load(open(progress_f))
 srcs = progress.get("sources", {})
-batch_paths = [srcs[k]["path"] for k in keys if k in srcs and "path" in srcs[k]]
+
+valid_keys = [k for k in keys if k in srcs and "path" in srcs[k]]
+dropped_keys = [k for k in keys if k not in valid_keys]
+if dropped_keys:
+    print(f"  ⚠️  {len(dropped_keys)} queued key(s) missing from progress.json "
+          f"or missing 'path' — excluded from this batch, left queued for "
+          f"retry: {dropped_keys}", file=sys.stderr)
+
+batch_paths = [srcs[k]["path"] for k in valid_keys]
 
 queue = {
     "batch_id": batch_id,
@@ -143,12 +165,16 @@ queue = {
 }
 with open(f"{wiki_root}/pipeline/tracking/queue.json", "w") as fh:
     json.dump(queue, fh, indent=2)
+
+for k in valid_keys:
+    print(k)
 PYEOF
+)
 
     "$SCRIPT_DIR/run-stage.sh" "5-reconstruction" "$BATCH_ID" "$BATCH_SIZE"
     while IFS= read -r key; do
         tracker_set_status "$key" "reconstructed"
-    done <<< "$_batch_queued"
+    done <<< "$_batch_valid"
 
     # Stage 6: Ingestion — promote only the batch snapshotted above
     echo ""
@@ -163,7 +189,7 @@ PYEOF
     "$SCRIPT_DIR/run-stage.sh" "6-ingestion" "$BATCH_ID" "$BATCH_SIZE"
     while IFS= read -r key; do
         tracker_set_status "$key" "ingested"
-    done <<< "$_batch_queued"
+    done <<< "$_batch_valid"
 
     # Snapshot gross pages created by ingestion, BEFORE stage 6c (dedup) runs.
     # 6c deletes pages when it merges near-duplicates against the *entire*
@@ -208,10 +234,10 @@ PYEOF
     # Promote only batch keys: ingested → compiled → done
     while IFS= read -r key; do
         tracker_set_status "$key" "compiled"
-    done <<< "$_batch_queued"
+    done <<< "$_batch_valid"
     while IFS= read -r key; do
         tracker_mark_done "$key"
-    done <<< "$_batch_queued"
+    done <<< "$_batch_valid"
 
     # Stage 7b: Embedding (incremental — only new pages)
     echo ""
