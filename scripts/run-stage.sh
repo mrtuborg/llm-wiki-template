@@ -51,10 +51,23 @@ STAGE_OUT_BACKUP="$_out_dir/.bak-current-${STAGE}.md"
 # Guard progress.json: agents must NEVER write it directly (shell/tracker.sh owns it).
 # Prompt rule alone is not enforced — an Edit-tool text patch against a stale read
 # of this file (while tracker.sh concurrently rewrites it) can splice two file
-# snapshots together and corrupt the JSON. Back it up + make read-only for the
-# duration of the agent turn so any write attempt fails loudly instead of silently.
+# snapshots together and corrupt the JSON. chmod 444 blocks naive in-place writes
+# (the actual observed corruption vector), but a bash-capable agent can still
+# bypass it via write-temp+mv or by deleting the file outright — so the real
+# safety net is the post-stage content+schema validation below, not the chmod.
 PROGRESS_FILE_GUARD="${TRACKING_DIR:-$WIKI_ROOT/pipeline/tracking}/progress.json"
 PROGRESS_FILE_BACKUP="${TRACKING_DIR:-$WIKI_ROOT/pipeline/tracking}/.bak-progress.json"
+
+# Self-heal: if a previous run crashed (e.g. SIGKILL) mid-guard, progress.json may
+# still be stuck at 444 from that run. Un-stick it before we do anything else.
+[ -f "$PROGRESS_FILE_GUARD" ] && chmod 644 "$PROGRESS_FILE_GUARD" 2>/dev/null
+
+# trap ensures write access is restored even if this script is interrupted
+# (SIGINT/SIGTERM) while progress.json is chmod 444. SIGKILL can't be trapped —
+# the self-heal above is what recovers from that case on the next run.
+_restore_progress_perms() { [ -f "$PROGRESS_FILE_GUARD" ] && chmod 644 "$PROGRESS_FILE_GUARD" 2>/dev/null; }
+trap _restore_progress_perms EXIT INT TERM
+
 if [ -f "$PROGRESS_FILE_GUARD" ]; then
     cp -f "$PROGRESS_FILE_GUARD" "$PROGRESS_FILE_BACKUP"
     chmod 444 "$PROGRESS_FILE_GUARD"
@@ -98,16 +111,32 @@ EXIT_CODE=$?
 
 # Restore write access to progress.json regardless of outcome — shell (tracker.sh)
 # needs it writable for the status promotions that follow this stage.
+# Validate on CONTENT, not just chmod state — the agent can bypass chmod 444 via
+# its own write-temp+mv or by deleting the file outright, so we must check the
+# file exists, parses, AND still has the expected schema (not just "is valid JSON").
 if [ -f "$PROGRESS_FILE_GUARD" ]; then
-    chmod 644 "$PROGRESS_FILE_GUARD"
-    if jq empty "$PROGRESS_FILE_GUARD" 2>/dev/null; then
-        rm -f "$PROGRESS_FILE_BACKUP"   # valid JSON — safe to drop the backup
+    chmod 644 "$PROGRESS_FILE_GUARD" 2>/dev/null
+fi
+
+_progress_ok=false
+if [ -f "$PROGRESS_FILE_GUARD" ] \
+   && jq empty "$PROGRESS_FILE_GUARD" 2>/dev/null \
+   && [ "$(jq -r '(.sources | type == "object") and (.stats | type == "object")' "$PROGRESS_FILE_GUARD" 2>/dev/null)" = "true" ]; then
+    _progress_ok=true
+fi
+
+if [ "$_progress_ok" = true ]; then
+    rm -f "$PROGRESS_FILE_BACKUP"   # valid schema — safe to drop the backup
+elif [ -f "$PROGRESS_FILE_BACKUP" ]; then
+    if [ ! -f "$PROGRESS_FILE_GUARD" ]; then
+        echo "[run-stage] ⚠️  progress.json is MISSING after stage $STAGE — restoring backup"
     else
-        echo "[run-stage] ⚠️  progress.json is invalid JSON after stage $STAGE — restoring backup"
-        echo "[run-stage] ⚠️  This means the agent wrote to progress.json despite the Tracking rule."
-        [ -f "$PROGRESS_FILE_BACKUP" ] && mv -f "$PROGRESS_FILE_BACKUP" "$PROGRESS_FILE_GUARD" && \
-            echo "[run-stage] ↩️  progress.json restored from backup"
+        echo "[run-stage] ⚠️  progress.json is corrupted (invalid JSON or wrong schema) after stage $STAGE — restoring backup"
     fi
+    echo "[run-stage] ⚠️  This means the agent wrote to progress.json despite the Tracking rule."
+    mv -f "$PROGRESS_FILE_BACKUP" "$PROGRESS_FILE_GUARD"
+    chmod 644 "$PROGRESS_FILE_GUARD"
+    echo "[run-stage] ↩️  progress.json restored from backup"
 fi
 
 echo ""
