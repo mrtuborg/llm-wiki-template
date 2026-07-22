@@ -113,6 +113,38 @@ while true; do
     echo ""
     echo "▶ Stage 5: Reconstruction..."
     _batch_queued=$(tracker_list queued | head -"$BATCH_SIZE")
+
+    # Regenerate queue.json from the EXACT keys selected above — this is now the
+    # single source of truth for "what this batch is". Previously queue.json was
+    # written once by scan-sources.sh and never refreshed once the tracker's
+    # queued pool stayed above 0 (normal for any backlog bigger than BATCH_SIZE),
+    # so the Stage 5 LLM agent kept reading a stale, frozen file list from the
+    # very first scan (e.g. reconstructing the same 3 files hundreds of times)
+    # while this promotion loop silently marched through a completely different
+    # set of real backlog files each iteration and marked them reconstructed →
+    # ingested → compiled → done without any stage ever actually processing
+    # them. Regenerating queue.json here from _batch_queued guarantees the
+    # agent's input and the promotion list can never diverge again.
+    printf '%s\n' "$_batch_queued" | python3 - "$PROGRESS_FILE" "$WIKI_ROOT" "$BATCH_ID" << 'PYEOF'
+import json, sys
+
+progress_f, wiki_root, batch_id = sys.argv[1:4]
+keys = [line.strip() for line in sys.stdin if line.strip()]
+
+progress = json.load(open(progress_f))
+srcs = progress.get("sources", {})
+batch_paths = [srcs[k]["path"] for k in keys if k in srcs and "path" in srcs[k]]
+
+queue = {
+    "batch_id": batch_id,
+    "files": batch_paths,
+    "total_queued": sum(1 for v in srcs.values() if v.get("status") == "queued"),
+    "total_pending": sum(1 for v in srcs.values() if v.get("status") == "pending"),
+}
+with open(f"{wiki_root}/pipeline/tracking/queue.json", "w") as fh:
+    json.dump(queue, fh, indent=2)
+PYEOF
+
     "$SCRIPT_DIR/run-stage.sh" "5-reconstruction" "$BATCH_ID" "$BATCH_SIZE"
     while IFS= read -r key; do
         tracker_set_status "$key" "reconstructed"

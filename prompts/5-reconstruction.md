@@ -9,13 +9,14 @@
 {{SHARED_CONTEXT}}
 
 ### Input
-- Stage output from scan: `{{WIKI_ROOT}}/pipeline/stage-output/current-5-reconstruction.md`  
-  *(read this to get the list of source files for this batch)*
 - Current batch queue: `{{WIKI_ROOT}}/pipeline/tracking/queue.json`
+  *(this is the ONLY authoritative list of source files for this batch — it is
+  regenerated fresh before every batch. Do not rely on any other file to
+  determine which sources belong to this batch.)*
 
 ### Your Task: Reconstruct Knowledge from Raw Sources
 
-For each file listed in the scan output / queue:
+For each file listed in `queue.json`'s `files` array:
 
 1. **Read the source file** completely (ALL lines — nothing skipped)
 2. **Extract ALL knowledge fragments**:
