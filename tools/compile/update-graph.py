@@ -52,7 +52,7 @@ def normalize_label(label: str) -> str:
     return label if label in ALLOWED_LABELS else "relates-to"
 
 edges = []
-seen_edges = set()
+seen_edges = set()  # always stored as tuple(sorted([src, tgt])) for consistent dedup
 
 # 1. Existing compiled graph edges (normalize labels)
 graph_files = sorted(glob.glob(GRAPH_DIR + "/*-graph.md"))
@@ -68,8 +68,8 @@ if graph_files:
         m = edge_table_re.match(line)
         if not m: continue
         src, etype, tgt, label = [x.strip() for x in m.groups()]
-        if src in ("Source", "---"): continue
-        key = (src, tgt)
+        if src in ("Source", "---") or src.startswith("---"): continue
+        key = tuple(sorted([src, tgt]))
         if key not in seen_edges:
             edges.append((src, etype, tgt, normalize_label(label)))
             seen_edges.add(key)
@@ -89,7 +89,7 @@ for f in sorted(glob.glob(WIKI_DIR + "/**/*.md", recursive=True)):
     section = after[:nxt.start()] if nxt else after
     for m in wikilink_re.finditer(section):
         tgt_slug = os.path.splitext(os.path.basename(m.group(1).strip()))[0]
-        key = (src_slug, tgt_slug)
+        key = tuple(sorted([src_slug, tgt_slug]))
         if key not in seen_edges:
             edges.append((src_slug, "Concept→Concept", tgt_slug, "relates-to"))
             seen_edges.add(key)
@@ -195,6 +195,7 @@ for f in glob.glob(WIKI_DIR + "/**/*.md", recursive=True):
     domain = m.group(1).strip('"\'')
     anchor = DOMAIN_ANCHORS.get(domain)
     if not anchor or anchor == slug: continue
+    if anchor not in pages_meta: continue  # anchor page doesn't exist yet
 
     key = tuple(sorted([slug, anchor]))
     if key not in seen_edges:
@@ -205,7 +206,7 @@ for f in glob.glob(WIKI_DIR + "/**/*.md", recursive=True):
 
 print(f"  Domain anchor fallback: {domain_anchor_added}")
 
-# 5. Write new compiled graph.md
+# 5. Write new compiled graph.md (keep last 5 only)
 ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 out_path = os.path.join(GRAPH_DIR, f"{ts}-graph.md")
 os.makedirs(GRAPH_DIR, exist_ok=True)
@@ -218,6 +219,11 @@ with open(out_path, "w", encoding="utf-8") as fh:
     fh.write("|--------|-----------|--------|-------|\n")
     for src, etype, tgt, label in edges:
         fh.write(f"| {src} | {etype} | {tgt} | {label} |\n")
+
+# Prune old graph files — keep newest 5
+old_graphs = sorted(glob.glob(GRAPH_DIR + "/*-graph.md"))
+for stale in old_graphs[:-5]:
+    os.remove(stale)
 
 print(f"  Written: {out_path}")
 print(f"  Total edges: {len(edges)}")

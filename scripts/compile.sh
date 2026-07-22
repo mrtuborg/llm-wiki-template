@@ -163,7 +163,9 @@ echo "[compile] Stage output written"
 UPDATE_GRAPH="$SCRIPT_DIR/../tools/compile/update-graph.py"
 if [[ -f "$UPDATE_GRAPH" ]]; then
     echo "[compile] Rebuilding knowledge graph..."
-    WIKI_ROOT="$WIKI_ROOT" python3 "$UPDATE_GRAPH" && echo "[compile] Graph rebuilt"
+    WIKI_ROOT="$WIKI_ROOT" python3 "$UPDATE_GRAPH" \
+        && echo "[compile] Graph rebuilt" \
+        || echo "[compile] ⚠️  Graph rebuild failed (compile still succeeded)"
 else
     echo "[compile] ⚠️  update-graph.py not found, skipping graph rebuild"
 fi
