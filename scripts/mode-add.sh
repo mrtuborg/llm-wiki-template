@@ -133,6 +133,17 @@ while true; do
         tracker_set_status "$key" "ingested"
     done <<< "$_batch_queued"
 
+    # Snapshot gross pages created by ingestion, BEFORE stage 6c (dedup) runs.
+    # 6c deletes pages when it merges near-duplicates against the *entire*
+    # existing wiki (not just this batch), so measuring after 6c would net
+    # creations against consolidation deletions — a batch that genuinely
+    # created 8 pages but triggered 3 dedup merges would net to 5 (or lower),
+    # masking real ingestion work and deflating the synthesis threshold.
+    # 6b (link enrichment) only edits existing pages, it doesn't create/delete,
+    # so it's safe to run between this snapshot and the "before" one.
+    _wiki_after=$(find "$WIKI_ROOT/wiki" -name '*.md' -not -path '*/graph/*' -not -path '*/updates/*' -not -path '*/templates/*' -not -path '*/decisions/*' 2>/dev/null | wc -l | tr -d ' ')
+    _new_pages=$(( _wiki_after - _wiki_before ))
+
     # Stage 6b: Link Enrichment
     echo ""
     echo "▶ Stage 6b: Link Enrichment..."
@@ -143,12 +154,11 @@ while true; do
     echo "▶ Stage 6c: Deduplication..."
     "$SCRIPT_DIR/run-stage.sh" "6c-dedup" "$BATCH_ID"
 
-    # Record how many new pages were added by this batch (ingestion through dedup).
-    # This MUST happen before compile.sh runs — compile.sh reads batch_new_pages
-    # from progress.json to compute the synthesis threshold, so writing it after
-    # compile.sh would make compile.sh always see the previous batch's stale value.
-    _wiki_after=$(find "$WIKI_ROOT/wiki" -name '*.md' -not -path '*/graph/*' -not -path '*/updates/*' -not -path '*/templates/*' -not -path '*/decisions/*' 2>/dev/null | wc -l | tr -d ' ')
-    _new_pages=$(( _wiki_after - _wiki_before ))
+    # Record how many new pages were created by this batch (measured pre-dedup,
+    # see above). This MUST happen before compile.sh runs — compile.sh reads
+    # batch_new_pages from progress.json to compute the synthesis threshold, so
+    # writing it after compile.sh would make compile.sh always see the previous
+    # batch's stale value.
     python3 - "$PROGRESS_FILE" "$_new_pages" << 'PYEOF'
 import json, sys
 f, n = sys.argv[1], int(sys.argv[2])
