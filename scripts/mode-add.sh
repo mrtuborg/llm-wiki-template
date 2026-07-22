@@ -143,13 +143,10 @@ while true; do
     echo "▶ Stage 6c: Deduplication..."
     "$SCRIPT_DIR/run-stage.sh" "6c-dedup" "$BATCH_ID"
 
-    # Stage 7: Compilation (shell — index, registry, stats; LLM only for dead-link fixes)
-    echo ""
-    echo "▶ Stage 7: Compilation (shell)..."
-    bash "$SCRIPT_DIR/compile.sh" "$BATCH_ID"
-
-    # Record how many new pages were added by this batch (ingestion through dedup)
-    # — used by compile.sh for the synthesis trigger
+    # Record how many new pages were added by this batch (ingestion through dedup).
+    # This MUST happen before compile.sh runs — compile.sh reads batch_new_pages
+    # from progress.json to compute the synthesis threshold, so writing it after
+    # compile.sh would make compile.sh always see the previous batch's stale value.
     _wiki_after=$(find "$WIKI_ROOT/wiki" -name '*.md' -not -path '*/graph/*' -not -path '*/updates/*' -not -path '*/templates/*' -not -path '*/decisions/*' 2>/dev/null | wc -l | tr -d ' ')
     _new_pages=$(( _wiki_after - _wiki_before ))
     python3 - "$PROGRESS_FILE" "$_new_pages" << 'PYEOF'
@@ -160,6 +157,11 @@ d['batch_new_pages'] = n
 with open(f, 'w') as fh:
     json.dump(d, fh, indent=2)
 PYEOF
+
+    # Stage 7: Compilation (shell — index, registry, stats; LLM only for dead-link fixes)
+    echo ""
+    echo "▶ Stage 7: Compilation (shell)..."
+    bash "$SCRIPT_DIR/compile.sh" "$BATCH_ID"
 
     # Promote only batch keys: ingested → compiled → done
     while IFS= read -r key; do
