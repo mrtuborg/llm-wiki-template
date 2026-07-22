@@ -158,4 +158,14 @@ printf '# Stage 7 Output — %s (shell compile)\n## Dead link check\n%s\n\n## In
     "$([ "${NEW_PAGES:-0}" -ge 5 ] && echo YES || echo NO)" > "$STAGE_OUT"
 
 echo "[compile] Stage output written"
+
+# ── Graph rebuild ─────────────────────────────────────────────────────────────
+UPDATE_GRAPH="$SCRIPT_DIR/../tools/compile/update-graph.py"
+if [[ -f "$UPDATE_GRAPH" ]]; then
+    echo "[compile] Rebuilding knowledge graph..."
+    WIKI_ROOT="$WIKI_ROOT" python3 "$UPDATE_GRAPH" && echo "[compile] Graph rebuilt"
+else
+    echo "[compile] ⚠️  update-graph.py not found, skipping graph rebuild"
+fi
+
 echo "[compile] ✅ Done"
